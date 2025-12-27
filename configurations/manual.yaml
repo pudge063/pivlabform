@@ -1,0 +1,5 @@
+group_settings:
+  default_branch: "master"
+  description: "test manual description for group"
+project_settings:
+  description: "test manual description for project"

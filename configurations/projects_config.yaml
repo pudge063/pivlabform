@@ -1,0 +1,7 @@
+project_settings:
+  default_branch: "master"
+  description: "test"
+projects:
+  - sandbox/test/test-1/demo-project-1
+  - 2299
+recursive: true
