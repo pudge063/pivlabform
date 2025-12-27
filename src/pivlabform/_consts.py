@@ -10,3 +10,7 @@ class APIResources(enum.Enum):
         if entity_type not in cls.__members__:
             raise ValueError(f"Unknown entity type: {entity_type}")
         return cls[entity_type]
+
+
+class Files(enum.Enum):
+    manual_default_config = "config.yaml"

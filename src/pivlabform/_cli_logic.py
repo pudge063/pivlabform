@@ -3,6 +3,7 @@ import typing_extensions
 from .pivlabform import Pivlabform
 from . import _helpers
 from ._helpers import LOGGER
+from . import _consts
 
 
 def create_click_command():
@@ -47,7 +48,7 @@ def create_click_command():
     @click.option(
         "--config-file",
         "-c",
-        default="configurations/manual.yaml",
+        default=_consts.Files.manual_default_config.value,
         help="config file path",
     )
     @click.option(
