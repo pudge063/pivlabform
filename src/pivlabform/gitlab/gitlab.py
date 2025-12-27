@@ -1,8 +1,8 @@
 import requests
 import typing_extensions
-from pivlabform import _helpers
-from _helpers import LOGGER
-import gvars
+from .. import _helpers
+from .._helpers import LOGGER
+from .. import gvars
 import sys
 
 

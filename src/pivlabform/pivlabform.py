@@ -1,10 +1,10 @@
 import typing_extensions
 import sys
 import json
-import _helpers
-from _helpers import LOGGER
-from gitlab.gitlab import GitLab
-from gitlab.models.configs import ProjectSettings, GroupSettings
+from . import _helpers
+from ._helpers import LOGGER
+from .gitlab.gitlab import GitLab
+from .gitlab.models.configs import ProjectSettings, GroupSettings
 
 
 class Pivlabform:

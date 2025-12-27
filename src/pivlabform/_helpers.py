@@ -5,7 +5,7 @@ import typing_extensions
 import logging
 import colorlog
 import urllib.parse
-import _consts
+from . import _consts
 
 
 def setup_logger():

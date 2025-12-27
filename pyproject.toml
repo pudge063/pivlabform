@@ -7,6 +7,10 @@ authors = [
 ]
 license = {text = "PivLab Tech"}
 readme = "README.md"
+packages = [
+    { include = "pivlabform", from = "src" },
+]
+
 requires-python = ">=3.11"
 dependencies = [
     "requests (>=2.32.5,<3.0.0)",
@@ -17,6 +21,8 @@ dependencies = [
     "colorlog (>=6.10.1,<7.0.0)",
 ]
 
+[tool.poetry.scripts]
+pivlabform = "pivlabform.main:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

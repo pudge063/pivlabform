@@ -1,8 +1,8 @@
 import click
 import typing_extensions
-from pivlabform.process import Pivlabform
-import _helpers
-from _helpers import LOGGER
+from .pivlabform import Pivlabform
+from . import _helpers
+from ._helpers import LOGGER
 
 
 def create_click_command():
