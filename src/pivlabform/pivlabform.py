@@ -1,10 +1,8 @@
 import typing_extensions
 import sys
-import json
 from . import _helpers
 from ._helpers import LOGGER
 from .gitlab.gitlab import GitLab
-from .gitlab.models.configs import ProjectSettings, GroupSettings
 
 
 class Pivlabform:
@@ -20,6 +18,36 @@ class Pivlabform:
         # TODO: validation for CI with dry-run
         pass
 
+    def _process_entity_configuration(
+        self: typing_extensions.Self,
+        config: dict[str, typing_extensions.Any],
+        entities: list[str | None],
+        entity_type: str,
+    ) -> None:
+        group_variables_json = None
+        group_settings_json = _helpers.get_settings_json(
+            config, f"{entity_type}_settings"
+        )
+        if "variables" in config[f"{entity_type}_settings"]:
+            group_variables_json = _helpers.get_variables_json(
+                config,
+                f"{entity_type}_settings",
+            )
+
+        for entity in entities:
+            self.gl.confugure_entity(
+                entity,  # pyright: ignore[reportArgumentType]
+                entity_type,
+                group_settings_json,  # pyright: ignore[reportPossiblyUnboundVariable]
+            )
+
+            if group_variables_json:
+                self.gl.update_entity_variables(
+                    entity_id=entity,  # pyright: ignore[reportArgumentType]
+                    entity_type=entity_type,
+                    config_variables=group_variables_json,
+                )
+
     def process_manual_configuration(
         self: typing_extensions.Self,
         path_type: typing_extensions.Optional[str],
@@ -27,6 +55,7 @@ class Pivlabform:
         id: typing_extensions.Optional[str],
         config_file: str,
         recursive: bool,
+        validate: bool,
     ):
         if not path_type:
             LOGGER.error(f"ERROR: not provided type of path")
@@ -39,19 +68,10 @@ class Pivlabform:
             sys.exit(1)
 
         config = _helpers.load_data_from_yaml(config_file)
-        if path_type == "group" and "group_settings" in config:
-            group_settings = GroupSettings(**config["group_settings"])
-            group_settings_json = group_settings.to_api_json()
-            LOGGER.debug(
-                f"group settings: {json.dumps(group_settings_json, indent=4,)}"
-            )
 
-        if "project_settings" in config:
-            project_settings = ProjectSettings(**config["project_settings"])
-            project_settings_json = project_settings.to_api_json()
-            LOGGER.debug(
-                f"project settings: {json.dumps(project_settings_json, indent=4,)}"
-            )
+        if validate:
+            LOGGER.warning("validate only")
+            sys.exit(0)
 
         if not id:
             id = self.gl.get_entity_id_from_url(
@@ -75,16 +95,14 @@ class Pivlabform:
         LOGGER.info(f"groups: {groups}")
         LOGGER.info(f"projects: {projects}")
 
-        for group_id in groups:
-            self.gl.confugure_entity(
-                group_id,  # pyright: ignore[reportArgumentType]
-                "group",
-                group_settings_json,  # pyright: ignore[reportPossiblyUnboundVariable]
-            )
+        self._process_entity_configuration(
+            config=config,
+            entities=groups,  # pyright: ignore[reportArgumentType]
+            entity_type="group",
+        )
 
-        for project_id in projects:
-            self.gl.confugure_entity(
-                project_id,  # pyright: ignore[reportArgumentType]
-                "project",
-                project_settings_json,  # pyright: ignore[reportPossiblyUnboundVariable]
-            )
+        self._process_entity_configuration(
+            config=config,
+            entities=projects,  # pyright: ignore[reportArgumentType]
+            entity_type="project",
+        )

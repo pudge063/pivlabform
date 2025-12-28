@@ -1,11 +1,13 @@
 import yaml
 import os
+import json
 import sys
 import typing_extensions
 import logging
 import colorlog
 import urllib.parse
 from . import _consts
+from .gitlab.models import GroupSettings, Variables, Variable
 
 
 def setup_logger():
@@ -51,6 +53,30 @@ def load_data_from_yaml(
     return data
 
 
+def get_settings_json(
+    config: dict[str, typing_extensions.Any],
+    section: str,
+) -> dict[str, typing_extensions.Any]:
+    settings = GroupSettings(**config[section])
+
+    group_settings_json = settings.to_api_json()
+    LOGGER.debug(f"group settings: {json.dumps(group_settings_json, indent=4,)}")
+
+    return group_settings_json
+
+
+def get_variables_json(
+    config: dict[str, typing_extensions.Any],
+    section: str,
+) -> list[dict[str, typing_extensions.Any]]:
+    variables = Variables(variables=config[section]["variables"])
+
+    group_variables_json = variables.to_api_variables()
+    LOGGER.debug(f"group vars: {json.dumps(group_variables_json, indent=4,)}")
+
+    return group_variables_json
+
+
 def get_urlencoded_path(path: str) -> str:
     return urllib.parse.quote_plus(path)
 
@@ -61,3 +87,112 @@ def get_gitlab_host() -> str:
 
 def get_gitlab_token() -> str:
     return os.getenv("GITLAB_TOKEN", "")
+
+
+def check_variables_diff(
+    current_vars: list[dict[str, typing_extensions.Any]],
+    config_vars: list[dict[str, typing_extensions.Any]],
+) -> dict[str, list[Variables]]:
+    result: dict[str, list[Variables]] = {
+        "create": [],
+        "update": [],
+        "delete": [],
+        "unchanged": [],
+    }
+
+    current_lookup = {}
+    config_lookup = {}
+
+    for var in current_vars:
+        key = var.get("key", "")
+        scope = var.get("environment_scope", "*")
+        current_lookup[(key, scope)] = var
+
+    for var in config_vars:
+        key = var.get("key", "")
+        scope = var.get("environment_scope", "*")
+        config_lookup[(key, scope)] = var
+
+    for (
+        key,  # pyright: ignore[reportUnknownVariableType]
+        scope,  # pyright: ignore[reportUnknownVariableType]
+    ), config_var in (  # pyright: ignore[reportUnknownVariableType]
+        config_lookup.items()
+    ):
+        if (key, scope) not in current_lookup:
+            result["create"].append(
+                config_var  # pyright: ignore[reportUnknownArgumentType]
+            )
+
+    for (
+        key,  # pyright: ignore[reportUnknownVariableType]
+        scope,  # pyright: ignore[reportUnknownVariableType]
+    ), current_var in (  # pyright: ignore[reportUnknownVariableType]
+        current_lookup.items()
+    ):
+        if (key, scope) in config_lookup:
+            config_var = config_lookup[  # pyright: ignore[reportUnknownVariableType]
+                (key, scope)
+            ]
+            if not _are_variables_equal(
+                current_var,  # pyright: ignore[reportUnknownArgumentType]
+                config_var,  # pyright: ignore[reportUnknownArgumentType]
+            ):
+                result["update"].append(
+                    config_var  # pyright: ignore[reportUnknownArgumentType]
+                )
+            else:
+                result["unchanged"].append(
+                    current_var  # pyright: ignore[reportUnknownArgumentType]
+                )
+        else:
+            result["delete"].append(
+                current_var  # pyright: ignore[reportUnknownArgumentType]
+            )
+
+    LOGGER.debug(
+        f"Variables diff: "
+        f"create={len(result['create'])}, "
+        f"update={len(result['update'])}, "
+        f"delete={len(result['delete'])}, "
+        f"unchanged={len(result['unchanged'])}"
+    )
+
+    return result
+
+
+def _are_variables_equal(var1: Variable, var2: Variable) -> bool:
+    fields_to_compare = [
+        "value",
+        "masked",
+        "protected",
+        "raw",
+        "variable_type",
+        "description",
+    ]
+
+    for field in fields_to_compare:
+        val1 = var1.get(field)  # type: ignore
+        val2 = var2.get(field)  # type: ignore
+
+        if field in ["masked", "protected", "raw"]:
+            val1 = (
+                bool(val1)  # pyright: ignore[reportUnknownArgumentType]
+                if val1 is not None
+                else False
+            )
+            val2 = (
+                bool(val2)  # pyright: ignore[reportUnknownArgumentType]
+                if val2 is not None
+                else False
+            )
+
+        if isinstance(val1, (int, float)):
+            val1 = str(val1)
+        if isinstance(val2, (int, float)):
+            val2 = str(val2)
+
+        if val1 != val2:
+            return False
+
+    return True

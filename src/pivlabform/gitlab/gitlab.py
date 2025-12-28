@@ -23,7 +23,7 @@ class GitLab:
         self: typing_extensions.Self,
         method: str = "GET",
         url_postfix: str = "",
-        data: dict[str, str | int] = {},
+        data: dict[str, str | int] | typing_extensions.Any = {},
     ) -> requests.Response:
         r = self.gitlab_session.request(
             method=method,
@@ -179,3 +179,43 @@ class GitLab:
         )
 
         LOGGER.info(f"{entity_type} {entity_id} configured success")
+
+    def update_entity_variables(
+        self: typing_extensions.Self,
+        entity_id: str | int,
+        entity_type: str,
+        config_variables: list[dict[str, typing_extensions.Any]],
+    ):
+        r = self._send_gitlab_request(
+            method="GET",
+            url_postfix=f"{_helpers.get_resource_from_entity_type(entity_type)}/{entity_id}/variables",
+        )
+        current_variables = r.json()
+
+        variables = _helpers.check_variables_diff(current_variables, config_variables)
+
+        for var in variables["create"]:
+            self._send_gitlab_request(
+                method="POST",
+                url_postfix=(
+                    f"{_helpers.get_resource_from_entity_type(entity_type)}/{entity_id}/variables"
+                ),
+                data=var,
+            )
+
+        for var in variables["update"]:
+            self._send_gitlab_request(
+                method="PUT",
+                url_postfix=(
+                    f"{_helpers.get_resource_from_entity_type(entity_type)}/{entity_id}/variables/{var['key']}"  # type: ignore
+                ),
+                data=var,
+            )
+
+        for var in variables["delete"]:
+            self._send_gitlab_request(
+                method="DELETE",
+                url_postfix=(
+                    f"{_helpers.get_resource_from_entity_type(entity_type)}/{entity_id}/variables/{var['key']}"  # type: ignore
+                ),
+            )

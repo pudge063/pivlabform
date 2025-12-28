@@ -58,6 +58,12 @@ def create_click_command():
         help="apply configuration recursive for subgroups and projects in subgroups",
     )
     @click.option(
+        "--validate",
+        "-v",
+        is_flag=True,
+        help="only validate configurations",
+    )
+    @click.option(
         "--gitlab-host",
         default=_helpers.get_gitlab_host(),
         help="gitlab host url (example: `https://pivlab.space`)",
@@ -71,6 +77,7 @@ def create_click_command():
         config_file: str,
         recursive: bool,
         gitlab_host: str,
+        validate: bool,
         ci: bool = False,
     ):
         if not ci:
@@ -93,6 +100,7 @@ def create_click_command():
                 id=id,
                 config_file=config_file,
                 recursive=recursive,
+                validate=validate,
             )
 
     return process

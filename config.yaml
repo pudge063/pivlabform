@@ -1,5 +1,48 @@
 group_settings:
   default_branch: "master"
   description: "test manual description for group"
+  variables:
+    test:
+      key: TEST_VAR_1
+      value: "testtest"
+      description:
+      environment_scope: production
+      filter:
+      masked: true
+      protected: true
+      raw:
+      variable_type: env_var
+    test-2:
+      key: TEST_GROUP_VAR_2
+      value: "test_group_2"
+      description: var for group
+      environment_scope: production
+      filter:
+      masked: true
+      protected: true
+      raw:
+      variable_type: env_var
+    test-3:
+      key: TEST_PROJECT_VAR
+      value: "test_project_var_value111"
+      description: var for project
+      environment_scope: production
+      filter:
+      masked: true
+      protected: true
+      raw:
+      variable_type: env_var
+
 project_settings:
   description: "test manual description for project"
+  variables:
+    test:
+      key: TEST_PROJECT_VAR
+      value: "test_project_var_value"
+      description: var for project
+      environment_scope: production
+      filter:
+      masked: true
+      protected: true
+      raw:
+      variable_type: env_var
