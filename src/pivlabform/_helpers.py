@@ -84,7 +84,7 @@ def get_urlencoded_path(path: str) -> str:
 
 
 def get_gitlab_host() -> str:
-    return os.getenv("CI_SERVER_HOST", "")
+    return os.getenv("CI_SERVER_HOST", "https://pivlab.space")
 
 
 def get_gitlab_token() -> str:
@@ -116,41 +116,33 @@ def check_variables_diff(
         config_lookup[(key, scope)] = var
 
     for (
-        key,  # pyright: ignore[reportUnknownVariableType]
-        scope,  # pyright: ignore[reportUnknownVariableType]
-    ), config_var in (  # pyright: ignore[reportUnknownVariableType]
+        key,  # type: ignore
+        scope,  # type: ignore
+    ), config_var in (  # type: ignore
         config_lookup.items()
     ):
         if (key, scope) not in current_lookup:
             result["create"].append(
-                config_var  # pyright: ignore[reportUnknownArgumentType]
+                config_var,  # type: ignore
             )
 
     for (
-        key,  # pyright: ignore[reportUnknownVariableType]
-        scope,  # pyright: ignore[reportUnknownVariableType]
-    ), current_var in (  # pyright: ignore[reportUnknownVariableType]
+        key,  # type: ignore
+        scope,  # type: ignore
+    ), current_var in (  # type: ignore
         current_lookup.items()
     ):
         if (key, scope) in config_lookup:
-            config_var = config_lookup[  # pyright: ignore[reportUnknownVariableType]
-                (key, scope)
-            ]
+            config_var = config_lookup[(key, scope)]  # type: ignore
             if not _are_variables_equal(
-                current_var,  # pyright: ignore[reportUnknownArgumentType]
-                config_var,  # pyright: ignore[reportUnknownArgumentType]
+                current_var,  # type: ignore
+                config_var,  # type: ignore
             ):
-                result["update"].append(
-                    config_var  # pyright: ignore[reportUnknownArgumentType]
-                )
+                result["update"].append(config_var)  # type: ignore
             else:
-                result["unchanged"].append(
-                    current_var  # pyright: ignore[reportUnknownArgumentType]
-                )
+                result["unchanged"].append(current_var)  # type: ignore
         else:
-            result["delete"].append(
-                current_var  # pyright: ignore[reportUnknownArgumentType]
-            )
+            result["delete"].append(current_var)  # type: ignore
 
     LOGGER.debug(
         f"Variables diff: "
@@ -178,16 +170,8 @@ def _are_variables_equal(var1: Variable, var2: Variable) -> bool:
         val2 = var2.get(field)  # type: ignore
 
         if field in ["masked", "protected", "raw"]:
-            val1 = (
-                bool(val1)  # pyright: ignore[reportUnknownArgumentType]
-                if val1 is not None
-                else False
-            )
-            val2 = (
-                bool(val2)  # pyright: ignore[reportUnknownArgumentType]
-                if val2 is not None
-                else False
-            )
+            val1 = bool(val1) if val1 is not None else False  # type: ignore
+            val2 = bool(val2) if val2 is not None else False  # type: ignore
 
         if isinstance(val1, (int, float)):
             val1 = str(val1)

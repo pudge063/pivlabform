@@ -3,7 +3,7 @@ import sys
 import requests
 import typing_extensions
 
-from .. import _helpers, gvars
+from .. import _helpers
 from .._helpers import LOGGER
 
 
@@ -13,11 +13,11 @@ class GitLab:
         gitlab_host: str | None,
     ):
         gitlab_host = _helpers.get_gitlab_host() if not gitlab_host else gitlab_host
-        self.gitlab_api_url = f"{gitlab_host}/{gvars.Base.API_PREFIX.value}"
+        self.gitlab_api_url = f"{gitlab_host}/api/v4"
         self.gitlab_session = requests.Session()
 
         self.gitlab_session.headers.update(
-            {gvars.Base.TOKEN.value: _helpers.get_gitlab_token()}
+            {"PRIVATE-TOKEN": _helpers.get_gitlab_token()}
         )
 
     def _send_gitlab_request(
@@ -114,7 +114,7 @@ class GitLab:
 
         for subgroup in subgroups:
             groups = self.get_all_groups_recursive(
-                subgroup,  # pyright: ignore[reportArgumentType]
+                subgroup,  # type: ignore
                 groups,
             )
 
@@ -132,7 +132,7 @@ class GitLab:
         subgroups = self.get_all_groups_from_group(target_group)
         for subgroup in subgroups:
             projects = self.get_all_projects_recursive(
-                subgroup,  # pyright: ignore[reportArgumentType]
+                subgroup,  # type: ignore
                 projects,
             )
 
@@ -195,7 +195,10 @@ class GitLab:
             self._send_gitlab_request(
                 method="PUT",
                 url_postfix=(
-                    f"{_helpers.get_resource_from_entity_type(entity_type)}/{entity_id}/variables/{var['key']}"  # type: ignore
+                    (
+                        f"{_helpers.get_resource_from_entity_type(entity_type)}/"
+                        f"{entity_id}/variables/{var['key']}"  # type: ignore
+                    )
                 ),
                 data=var,
             )
@@ -205,6 +208,9 @@ class GitLab:
             self._send_gitlab_request(
                 method="DELETE",
                 url_postfix=(
-                    f"{_helpers.get_resource_from_entity_type(entity_type)}/{entity_id}/variables/{var['key']}"  # type: ignore
+                    (
+                        f"{_helpers.get_resource_from_entity_type(entity_type)}/"
+                        f"{entity_id}/variables/{var['key']}"  # type: ignore
+                    )
                 ),
             )

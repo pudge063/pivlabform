@@ -38,14 +38,14 @@ class Pivlabform:
 
         for entity in entities:
             self.gl.confugure_entity(
-                entity,  # pyright: ignore[reportArgumentType]
+                entity,  # type: ignore
                 entity_type,
-                group_settings_json,  # pyright: ignore[reportPossiblyUnboundVariable]
+                group_settings_json,  # type: ignore
             )
 
             if group_variables_json:
                 self.gl.update_entity_variables(
-                    entity_id=entity,  # pyright: ignore[reportArgumentType]
+                    entity_id=entity,  # type: ignore
                     entity_type=entity_type,
                     config_variables=group_variables_json,
                 )
@@ -60,13 +60,13 @@ class Pivlabform:
         validate: bool,
     ):
         if not path_type:
-            LOGGER.error(f"ERROR: not provided type of path")
+            LOGGER.error("ERROR: not provided type of path")
             sys.exit(1)
         if not path and not id or (id and path):
-            LOGGER.error(f"ERROR: required only one argumend - `id` or `path`")
+            LOGGER.error("ERROR: required only one argumend - `id` or `path`")
             sys.exit(1)
         if recursive and path_type == "project":
-            LOGGER.error(f"ERROR: recursive only for groups")
+            LOGGER.error("ERROR: recursive only for groups")
             sys.exit(1)
 
         config = _helpers.load_data_from_yaml(config_file)
@@ -77,10 +77,12 @@ class Pivlabform:
 
         if not id:
             id = self.gl.get_entity_id_from_url(
-                entity_path=path,  # pyright: ignore[reportArgumentType]
+                entity_path=path,  # type: ignore
                 entity_type=path_type,
             )
 
+        groups: list[int | None]
+        projects: list[int | None]
         groups, projects = [], []
 
         if path_type == "group":
@@ -99,13 +101,13 @@ class Pivlabform:
 
         self._process_entity_configuration(
             config=config,
-            entities=groups,  # pyright: ignore[reportArgumentType]
+            entities=groups,  # type: ignore
             entity_type="group",
         )
 
         self._process_entity_configuration(
             config=config,
-            entities=projects,  # pyright: ignore[reportArgumentType]
+            entities=projects,  # type: ignore
             entity_type="project",
         )
 
@@ -121,9 +123,9 @@ class Pivlabform:
         group_entities: list[int] = []
 
         for group in groups:
-            if type(group) == str:
+            if type(group) is str:
                 id = self.gl.get_entity_id_from_url(group, "group")
-            elif type(group) == int:
+            elif type(group) is int:
                 id = group
             else:
                 LOGGER.error(f"ERROR: unknown type of group: {group} - {type(group)}")
@@ -133,26 +135,26 @@ class Pivlabform:
                 group_entities.extend(
                     self.gl.get_all_groups_recursive(
                         id,
-                    )  # pyright: ignore[reportArgumentType]
+                    )  # type: ignore
                 )
                 project_entities.extend(
                     self.gl.get_all_projects_recursive(
                         id,
-                    )  # pyright: ignore[reportArgumentType]
+                    )  # type: ignore
                 )
             else:
                 project_entities.extend(
                     self.gl.get_all_projects_from_group(
                         id,
-                    )  # pyright: ignore[reportArgumentType]
+                    )  # type: ignore
                 )
 
             group_entities.append(id)
 
         for project in projects:
-            if type(project) == str:
+            if type(project) is str:
                 id = self.gl.get_entity_id_from_url(project, "project")
-            elif type(project) == int:
+            elif type(project) is int:
                 id = project
             else:
                 LOGGER.error(
@@ -182,12 +184,12 @@ class Pivlabform:
 
         self._process_entity_configuration(
             config=config,
-            entities=projects,  # pyright: ignore[reportArgumentType]
+            entities=projects,  # type: ignore
             entity_type="project",
         )
 
         self._process_entity_configuration(
             config=config,
-            entities=groups,  # pyright: ignore[reportArgumentType]
+            entities=groups,  # type: ignore
             entity_type="group",
         )

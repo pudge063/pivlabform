@@ -1,7 +1,7 @@
-"""PivLabForm - GitLab configuration management tool."""
+"""PivLabForm - GitLab as Code"""
 
-__version__ = "0.1.0"
-__author__ = "Your Name"
+__version__ = "0.1.1"
+__author__ = "Arsenii Nikulin"
 
 from ._cli_logic import create_click_command
 from .pivlabform import Pivlabform

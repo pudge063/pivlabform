@@ -66,7 +66,7 @@ def create_click_command():
         manual: typing_extensions.Optional[bool],
         type: typing_extensions.Optional[str],
         path: typing_extensions.Optional[str],
-        id: typing_extensions.Optional[str],
+        id: typing_extensions.Optional[int],
         config_file: str,
         recursive: bool,
         gitlab_host: str,
