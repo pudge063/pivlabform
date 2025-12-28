@@ -1,10 +1,11 @@
+import re
 from enum import Enum
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-import re
 
-from .variables import Variable
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from .protected_branches import ProtectedBranch
+from .variables import Variable
 
 
 class Visibility(str, Enum):

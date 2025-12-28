@@ -5,9 +5,9 @@ import urllib.parse
 import typing_extensions
 import yaml
 
+from ..gitlab.models import Variable
 from . import _consts
 from ._logger import LOGGER
-from ..gitlab.models import Variable
 
 
 def get_resource_from_entity_type(entity_type: str) -> str:
