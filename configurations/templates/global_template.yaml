@@ -1,0 +1,177 @@
+group_config:
+  settings:
+    default_branch:
+    lfs_enabled:
+    description:
+    visibility:
+    auto_devops_enabled:
+    default_branch_protection:
+    enabled_git_access_protocol:
+    emails_disabled:
+    mentions_disabled:
+    prevent_sharing_groups_outside_hierarchy:
+    project_creation_level:
+    request_access_enabled:
+    require_two_factor_authentication:
+    shared_runners_setting:
+    share_with_group_lock:
+    step_up_auth_required_oauth_provider:
+    subgroup_creation_level:
+    two_factor_grace_period:
+    extra_shared_runners_minutes_limit: # locked
+    file_template_project_id: # locked
+    membership_lock: # locked
+    prevent_forking_outside_group: # locked
+    shared_runners_minutes_limit: # locked
+    unique_project_download_limit: # locked
+    unique_project_download_limit_interval_in_seconds: # locked
+    unique_project_download_limit_allowlist: # locked
+    unique_project_download_limit_alertlist: # locked
+    auto_ban_user_on_excessive_projects_download: # locked
+    ip_restriction_ranges: # locked
+    allowed_email_domains_list: # locked
+    wiki_access_level: # locked
+    duo_availability:
+    experiment_features_enabled:
+    math_rendering_limits_enabled:
+    lock_math_rendering_limits_enabled:
+    duo_features_enabled: # locked
+    lock_duo_features_enabled: # locked
+    max_artifacts_size:
+    web_based_commit_signing_enabled:
+    only_allow_merge_if_pipeline_succeeds:
+    allow_merge_on_skipped_pipeline:
+    only_allow_merge_if_all_discussions_are_resolved:
+  variables:
+    VARIABLE-1:
+      key: RELEASE_VERSION
+      value: "Q4_29"
+      description:
+      environment_scope:
+      filter:
+      masked: false
+      protected: false
+      raw: false
+      variable_type: env_var
+
+project_config:
+  settings:
+    description:
+    default_branch:
+    allow_merge_on_skipped_pipeline:
+    allow_pipeline_trigger_approve_deployment:
+    only_allow_merge_if_all_status_checks_passed:
+    approvals_before_merge:
+    auto_cancel_pending_pipelines:
+    auto_devops_deploy_strategy:
+    auto_devops_enabled:
+    auto_duo_code_review_enabled:
+    autoclose_referenced_issues:
+    build_git_strategy:
+    build_timeout:
+    ci_config_path:
+    ci_default_git_depth:
+    ci_delete_pipelines_in_seconds:
+    ci_forward_deployment_enabled:
+    ci_forward_deployment_rollback_allowed:
+    ci_allow_fork_pipelines_to_run_in_parent_project:
+    ci_id_token_sub_claim_components:
+    ci_separated_caches:
+    ci_restrict_pipeline_cancellation_role:
+    ci_pipeline_variables_minimum_override_role:
+    ci_push_repository_for_job_token_allowed:
+    container_expiration_policy_attributes:
+    container_registry_enabled:
+    duo_remote_flows_enabled:
+    emails_enabled:
+    enforce_auth_checks_on_uploads:
+    external_authorization_classification_label:
+    group_runners_enabled:
+    import_url:
+    issues_template:
+    jobs_enabled:
+    keep_latest_artifact:
+    lfs_enabled:
+    max_artifacts_size:
+    merge_commit_template:
+    merge_method:
+    merge_pipelines_enabled:
+    merge_requests_enabled:
+    merge_trains_enabled:
+    merge_trains_skip_train_allowed:
+    mirror_overwrites_diverged_branches:
+    mirror_trigger_builds:
+    mirror_user_id:
+    mirror:
+    mr_default_target_self:
+    only_allow_merge_if_all_discussions_are_resolved:
+    only_allow_merge_if_pipeline_succeeds:
+    only_mirror_protected_branches:
+    packages_enabled:
+    package_registry_access_level:
+    prevent_merge_without_jira_issue:
+    printing_merge_request_link_enabled:
+    public_jobs:
+    remove_source_branch_after_merge:
+    repository_storage:
+    request_access_enabled:
+    resolve_outdated_diff_discussions:
+    restrict_user_defined_variables:
+    service_desk_enabled:
+    shared_runners_enabled:
+    show_default_award_emojis:
+    snippets_enabled:
+    issue_branch_template:
+    spp_repository_pipeline_access:
+    squash_commit_template:
+    squash_option:
+    suggestion_commit_message:
+    topics:
+    visibility:
+    warn_about_potentially_unwanted_characters:
+    web_based_commit_signing_enabled:
+
+    analytics_access_level:
+    builds_access_level:
+    container_registry_access_level:
+    environments_access_level:
+    feature_flags_access_level:
+    forking_access_level:
+    infrastructure_access_level:
+    issues_access_level:
+    merge_requests_access_level:
+    model_experiments_access_level:
+    model_registry_access_level:
+    monitor_access_level:
+    pages_access_level:
+    releases_access_level:
+    repository_access_level:
+    requirements_access_level:
+    security_and_compliance_access_level:
+    snippets_access_level:
+    wiki_access_level:
+  variables:
+    EXAMPLE-VAR-1:
+      key: PROJECT_VERSION
+      value: "0.1.2"
+      description:
+      environment_scope:
+      filter:
+      masked: false
+      protected: false
+      raw: false
+      variable_type: env_var
+  protected_branches:
+    master:
+      allow_force_push: true
+      merge_access_level: 50
+      push_access_level: 50
+      unprotect_access_level: 50
+    develop:
+
+groups:
+  - sandbox/pivlabform-tests
+
+projects:
+  - sandbox/pivlabform-tests/test-project-2
+  - 2306

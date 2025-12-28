@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import urllib.parse
@@ -6,9 +5,9 @@ import urllib.parse
 import typing_extensions
 import yaml
 
+from ..gitlab.models import Variable
 from . import _consts
 from ._logger import LOGGER
-from .gitlab.models import GroupSettings, Variable
 
 
 def get_resource_from_entity_type(entity_type: str) -> str:
@@ -18,7 +17,7 @@ def get_resource_from_entity_type(entity_type: str) -> str:
 def check_validate(validate: bool) -> None:
     if validate:
         LOGGER.warning("DRY-RUN: validate flag enabled")
-        sys.exit(1)
+        sys.exit(0)
 
 
 def load_data_from_yaml(
@@ -29,24 +28,12 @@ def load_data_from_yaml(
     return data
 
 
-def get_settings_json(
-    config: dict[str, typing_extensions.Any],
-    section: str,
-) -> dict[str, typing_extensions.Any]:
-    settings = GroupSettings(**config[section])
-
-    group_settings_json = settings.to_api_json()
-    LOGGER.debug(f"group settings: {json.dumps(group_settings_json, indent=4,)}")
-
-    return group_settings_json
-
-
 def get_urlencoded_path(path: str) -> str:
     return urllib.parse.quote_plus(path)
 
 
 def get_gitlab_host() -> str:
-    return os.getenv("CI_SERVER_HOST", "https://pivlab.space")
+    return "https://" + os.getenv("CI_SERVER_HOST", "pivlab.space")
 
 
 def get_gitlab_token() -> str:

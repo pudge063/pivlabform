@@ -1,9 +1,8 @@
 """PivLabForm - GitLab as Code"""
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 __author__ = "Arsenii Nikulin"
 
-from ._cli_logic import create_click_command
-from .pivlabform import Pivlabform
+from .cli import cli
 
-__all__ = ["Pivlabform", "create_click_command"]
+__all__ = ["cli"]

@@ -1,7 +1,7 @@
 from enum import Enum
-from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing_extensions import Optional
 
 
 class AccessLevelEnum(int, Enum):
@@ -15,7 +15,7 @@ class AccessLevelEnum(int, Enum):
 
 
 class ProtectedBranch(BaseModel):
-    name: str = Field(..., min_length=2, max_length=255)
+    # name: str = Field(..., min_length=2, max_length=255)
 
     # TODO: fields for Premium and Ultimate only
     # FIXME: not supports multy access
@@ -28,7 +28,3 @@ class ProtectedBranch(BaseModel):
     merge_access_level: Optional[AccessLevelEnum] = None
     push_access_level: Optional[AccessLevelEnum] = None
     unprotect_access_level: Optional[AccessLevelEnum] = None
-
-
-class ProtectedBranches(BaseModel):
-    branches: Optional[ProtectedBranch] = None

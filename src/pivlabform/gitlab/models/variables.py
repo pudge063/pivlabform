@@ -21,14 +21,3 @@ class Variable(BaseModel):
     raw: Optional[bool] = None
     variable_type: Optional[VariableType] = VariableType.ENV_VAR
     "https://gitlab.com/gitlab-org/gitlab/-/blob/master/spec/fixtures/api/schemas/variable.json"
-
-    # def to_api_json(
-    #     self,
-    #     exclude_none: bool = True,
-    # ) -> dict[str, typing_extensions.Any]:
-    #     data = self.model_dump(
-    #         exclude_none=exclude_none,
-    #         mode="json",
-    #         by_alias=False,
-    #     )
-    #     return data

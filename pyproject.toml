@@ -1,6 +1,6 @@
 [project]
 name = "pivlabform"
-version = "0.1.2"
+version = "0.2.0"
 description = "PivLabForm - GitLab as Code"
 authors = [
     {name = "Arsenii Nikulin",email = "studentq.work@yandex.ru"}
@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [tool.poetry.scripts]
-pivlabform = "pivlabform.main:main"
+pivlabform = "pivlabform.cli:cli"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

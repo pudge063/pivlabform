@@ -1,18 +1,43 @@
-pre-commit:
+default:
+  interruptible: false
   image: af.headoffice.pivlab:6005/python:3.11
   tags: [immortal]
+
+.base_job:
   before_script:
-    - export FORCE_COLOR=1
-    - export PY_COLORS=1
-    - export CLICOLOR_FORCE=1
-    - export PRE_COMMIT_COLOR=always
     - poetry install && . .venv/bin/activate
-  script:
-    - pre-commit run -a
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  cache:
-    paths:
-      - .cache/pre-commit
-      - .venv/
-    key: "pre-commit-cache"
+
+pre-commit:
+  variables:
+    FORCE_COLOR: 1
+    PY_COLORS: 1
+    CLICOLOR_FORCE: 1
+    PRE_COMMIT_COLOR: always
+  image: af.headoffice.pivlab:6005/pre-commit:6.0.0
+  extends: [.base_job]
+  script:
+    - pre-commit run -a -v
+
+update-version-badge:
+  script:
+    - |
+      BADGE_URL="https://img.shields.io/badge/stable-${CI_COMMIT_TAG}-green"
+      curl --request PUT \
+        --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "{
+          \"link_url\": \"https://$CI_SERVER_HOST/%{project_path}/-/tags\",
+          \"image_url\": \"$BADGE_URL\"
+        }" \
+        "https://$CI_SERVER_HOST/api/v4/projects/$CI_PROJECT_ID/badges/1"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG
+
+validate:
+  variables:
+    DEBUG: true
+  extends: [.base_job]
+  script:
+    - pivlabform -c configurations/templates/global_template.yaml -v
