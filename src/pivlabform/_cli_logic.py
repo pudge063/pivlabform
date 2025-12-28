@@ -83,7 +83,7 @@ def create_click_command():
                 print("python-dotenv not installed, skipping .env loading")
                 pass
 
-        pl = Pivlabform(gitlab_host)
+        pl = Pivlabform(config_file, gitlab_host)
 
         if manual:
             LOGGER.info("process manual run")
@@ -91,13 +91,11 @@ def create_click_command():
                 path_type=type,
                 path=path,
                 id=id,
-                config_file=config_file,
                 recursive=recursive,
                 validate=validate,
             )
         else:
             pl.process_auto_configuration(
-                config_file=config_file,
                 recursive=recursive,
                 validate=validate,
             )

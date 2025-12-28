@@ -1,18 +1,28 @@
 import sys
+import json
 
 import typing_extensions
 
 from . import _helpers
 from ._helpers import LOGGER
 from .gitlab.gitlab import GitLab
+from .gitlab.models import ConfigModel
 
 
 class Pivlabform:
     def __init__(
         self: typing_extensions.Self,
+        config_file: str,
         gitlab_host: str,
     ) -> None:
         self.gl = GitLab(gitlab_host)
+
+        config_model = ConfigModel(**_helpers.load_data_from_yaml(config_file))
+        self.config_model_json = config_model.dump_model_to_json()
+
+        LOGGER.info(
+            f"config_model_json:\n{json.dumps(self.config_model_json, indent=4)}"
+        )
 
     def validate_configuration(
         self: typing_extensions.Self,
@@ -22,40 +32,29 @@ class Pivlabform:
 
     def _process_entity_configuration(
         self: typing_extensions.Self,
-        config: dict[str, typing_extensions.Any],
-        entities: list[str | None],
+        entities: list[int | None],
         entity_type: str,
     ) -> None:
-        group_variables_json = None
-        group_settings_json = _helpers.get_settings_json(
-            config, f"{entity_type}_settings"
-        )
-        if "variables" in config[f"{entity_type}_settings"]:
-            group_variables_json = _helpers.get_variables_json(
-                config,
-                f"{entity_type}_settings",
-            )
-
         for entity in entities:
             self.gl.confugure_entity(
-                entity,  # type: ignore
-                entity_type,
-                group_settings_json,  # type: ignore
+                entity_id=entity,  # type: ignore
+                entity_type=entity_type,
+                config=self.config_model_json[f"{entity_type}_config"]["settings"],  # type: ignore
             )
 
-            if group_variables_json:
-                self.gl.update_entity_variables(
-                    entity_id=entity,  # type: ignore
-                    entity_type=entity_type,
-                    config_variables=group_variables_json,
-                )
+            self.gl.update_entity_variables(
+                entity_id=entity,  # type: ignore
+                entity_type=entity_type,
+                config_variables=self.config_model_json[f"{entity_type}_config"][
+                    "variables"
+                ],
+            )
 
     def process_manual_configuration(
         self: typing_extensions.Self,
         path_type: typing_extensions.Optional[str],
         path: typing_extensions.Optional[str],
         id: typing_extensions.Optional[int],
-        config_file: str,
         recursive: bool,
         validate: bool,
     ):
@@ -68,12 +67,6 @@ class Pivlabform:
         if recursive and path_type == "project":
             LOGGER.error("ERROR: recursive only for groups")
             sys.exit(1)
-
-        config = _helpers.load_data_from_yaml(config_file)
-
-        if validate:
-            LOGGER.warning("validate only")
-            sys.exit(0)
 
         if not id:
             id = self.gl.get_entity_id_from_url(
@@ -99,25 +92,28 @@ class Pivlabform:
         LOGGER.info(f"groups: {groups}")
         LOGGER.info(f"projects: {projects}")
 
+        _helpers.check_validate(validate)
+
         self._process_entity_configuration(
-            config=config,
             entities=groups,  # type: ignore
             entity_type="group",
         )
 
         self._process_entity_configuration(
-            config=config,
             entities=projects,  # type: ignore
             entity_type="project",
         )
 
-    def get_entities_list(
+    def get_entities_id_list(
         self: typing_extensions.Self,
-        config: dict[str, typing_extensions.Any],
         recursive: bool,
     ) -> tuple[list[int], list[int]]:
-        projects: list[str | int] = config["projects"] if "projects" in config else []
-        groups: list[str | int] = config["groups"] if "groups" in config else []
+
+        projects = self.config_model_json.get("projects", [])
+        groups = self.config_model_json.get("groups", [])
+
+        LOGGER.warning(f"projects: {projects}")
+        LOGGER.warning(f"groups: {groups}")
 
         project_entities: list[int] = []
         group_entities: list[int] = []
@@ -168,28 +164,27 @@ class Pivlabform:
 
     def process_auto_configuration(
         self: typing_extensions.Self,
-        config_file: str,
         recursive: bool,
         validate: bool,
     ):
-        config = _helpers.load_data_from_yaml(config_file)
 
-        groups, projects = self.get_entities_list(
-            config=config,
+        groups, projects = self.get_entities_id_list(
             recursive=recursive,
         )
 
         LOGGER.warning(f"projects for configuration: {projects}")
         LOGGER.warning(f"groups for configuration: {groups}")
 
-        self._process_entity_configuration(
-            config=config,
-            entities=projects,  # type: ignore
-            entity_type="project",
-        )
+        _helpers.check_validate(validate)
 
-        self._process_entity_configuration(
-            config=config,
-            entities=groups,  # type: ignore
-            entity_type="group",
-        )
+        if projects:
+            self._process_entity_configuration(
+                entities=projects,  # type: ignore
+                entity_type="project",
+            )
+
+        if groups:
+            self._process_entity_configuration(
+                entities=groups,  # type: ignore
+                entity_type="group",
+            )

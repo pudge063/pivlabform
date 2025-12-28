@@ -1,50 +1,24 @@
 import json
-import logging
 import os
 import sys
 import urllib.parse
 
-import colorlog
 import typing_extensions
 import yaml
 
 from . import _consts
-from .gitlab.models import GroupSettings, Variable, Variables
-
-
-def setup_logger():
-    formatter = colorlog.ColoredFormatter(
-        "%(log_color)s%(asctime)s:%(levelname)s:%(name)s:%(funcName)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        log_colors={
-            "DEBUG": "cyan",
-            "INFO": "green",
-            "WARNING": "yellow",
-            "ERROR": "red",
-            "CRITICAL": "red,bg_white",
-        },
-        secondary_log_colors={},
-        style="%",
-    )
-
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(formatter)
-
-    logger = logging.getLogger(__name__)
-
-    logger.setLevel(logging.DEBUG)
-
-    if not logger.handlers:
-        logger.addHandler(console_handler)
-
-    return logger
-
-
-LOGGER = setup_logger()
+from .gitlab.models import GroupSettings, Variable
+from ._logger import LOGGER
 
 
 def get_resource_from_entity_type(entity_type: str) -> str:
     return _consts.APIResources.from_entity_type(entity_type).value
+
+
+def check_validate(validate: bool) -> None:
+    if validate:
+        LOGGER.warning("DRY-RUN: validate flag enabled")
+        sys.exit(1)
 
 
 def load_data_from_yaml(
@@ -67,18 +41,6 @@ def get_settings_json(
     return group_settings_json
 
 
-def get_variables_json(
-    config: dict[str, typing_extensions.Any],
-    section: str,
-) -> list[dict[str, typing_extensions.Any]]:
-    variables = Variables(variables=config[section]["variables"])
-
-    group_variables_json = variables.to_api_variables()
-    LOGGER.debug(f"group vars: {json.dumps(group_variables_json, indent=4,)}")
-
-    return group_variables_json
-
-
 def get_urlencoded_path(path: str) -> str:
     return urllib.parse.quote_plus(path)
 
@@ -91,11 +53,37 @@ def get_gitlab_token() -> str:
     return os.getenv("GITLAB_TOKEN", "")
 
 
+def _normalize_variables(
+    variables: typing_extensions.Union[
+        list[dict[str, typing_extensions.Any]],
+        dict[str, dict[str, typing_extensions.Any]],
+    ],
+) -> list[dict[str, typing_extensions.Any]]:
+    if isinstance(variables, dict):
+        # format: {"VAR_NAME": {...}}
+        result: list[dict[str, typing_extensions.Any]] = []
+        for _, var_data in variables.items():
+            # Если в данных нет ключа "key", добавляем его из имени
+            var_dict = dict(var_data)
+            # if "key" not in var_dict or not var_dict["key"]:
+            #     var_dict["key"] = var_name
+            result.append(var_dict)
+        return result
+    elif isinstance(variables, list):  # type: ignore
+        # format: [{"key": "VAR_NAME", ...}]
+        return variables
+    else:
+        return []
+
+
 def check_variables_diff(
     current_vars: list[dict[str, typing_extensions.Any]],
     config_vars: list[dict[str, typing_extensions.Any]],
-) -> dict[str, list[Variables]]:
-    result: dict[str, list[Variables]] = {
+) -> dict[str, list[dict[str, Variable]]]:
+    current_list = _normalize_variables(current_vars)
+    config_list = _normalize_variables(config_vars)
+
+    result: dict[str, list[dict[str, Variable]]] = {
         "create": [],
         "update": [],
         "delete": [],
@@ -105,12 +93,12 @@ def check_variables_diff(
     current_lookup = {}
     config_lookup = {}
 
-    for var in current_vars:
+    for var in current_list:
         key = var.get("key", "")
         scope = var.get("environment_scope", "*")
         current_lookup[(key, scope)] = var
 
-    for var in config_vars:
+    for var in config_list:
         key = var.get("key", "")
         scope = var.get("environment_scope", "*")
         config_lookup[(key, scope)] = var
