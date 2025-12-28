@@ -17,7 +17,7 @@ def get_resource_from_entity_type(entity_type: str) -> str:
 def check_validate(validate: bool) -> None:
     if validate:
         LOGGER.warning("DRY-RUN: validate flag enabled")
-        sys.exit(1)
+        sys.exit(0)
 
 
 def load_data_from_yaml(
