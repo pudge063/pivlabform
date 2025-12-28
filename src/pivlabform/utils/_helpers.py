@@ -33,7 +33,7 @@ def get_urlencoded_path(path: str) -> str:
 
 
 def get_gitlab_host() -> str:
-    return os.getenv("CI_SERVER_HOST", "https://pivlab.space")
+    return "https://" + os.getenv("CI_SERVER_HOST", "pivlab.space")
 
 
 def get_gitlab_token() -> str:
