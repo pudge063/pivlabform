@@ -1,3 +1,4 @@
+import json
 import sys
 
 import requests
@@ -34,6 +35,7 @@ class GitLab:
 
         if not r.ok:
             LOGGER.error(f"ERROR: {r.status_code}:{r.text}")
+            LOGGER.error(f"DATA:\n{json.dumps(data, indent=4)}")
             sys.exit(1)
 
         return r
@@ -180,6 +182,8 @@ class GitLab:
         )
         current_variables = r.json()
 
+        # LOGGER.warning(config_variables)
+
         variables = _helpers.check_variables_diff(current_variables, config_variables)
 
         for var in variables["create"]:
@@ -214,3 +218,7 @@ class GitLab:
                     )
                 ),
             )
+
+    def protect_branches(self: typing_extensions.Self) -> None:
+        # TODO: function for configure protected branches in projects
+        pass

@@ -1,6 +1,6 @@
 """PivLabForm - GitLab as Code"""
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __author__ = "Arsenii Nikulin"
 
 from ._cli_logic import create_click_command

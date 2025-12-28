@@ -4,6 +4,8 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from .base_settings import BaseSettings
+from .protected_branches import ProtectedBranches
+from .variables import Variable
 
 
 class Visibility(str, Enum):
@@ -169,3 +171,9 @@ class ProjectSettings(BaseSettings):
     requirements_access_level: Optional[AccessLevel] = None
     security_and_compliance_access_level: Optional[AccessLevel] = None
     snippets_access_level: Optional[AccessLevel] = None
+
+
+class ProjectConfig(BaseSettings):
+    settings: Optional[ProjectSettings] = None
+    variables: Optional[dict[str, Variable]] = None
+    protected_branches: Optional[ProtectedBranches] = None

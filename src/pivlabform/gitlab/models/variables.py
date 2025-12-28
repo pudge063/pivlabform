@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 import typing_extensions
 from pydantic import BaseModel, Field
@@ -20,34 +20,15 @@ class Variable(BaseModel):
     protected: Optional[bool] = None
     raw: Optional[bool] = None
     variable_type: Optional[VariableType] = VariableType.ENV_VAR
+    "https://gitlab.com/gitlab-org/gitlab/-/blob/master/spec/fixtures/api/schemas/variable.json"
 
-    def to_api_json(
-        self,
-        exclude_none: bool = True,
-    ) -> dict[str, typing_extensions.Any]:
-        data = self.model_dump(
-            exclude_none=exclude_none,
-            mode="json",
-            by_alias=False,
-        )
-        return data
-
-
-class Variables(BaseModel):
-    variables: dict[str, Variable]
-
-    def to_api_variables(self) -> List[dict[str, typing_extensions.Any]]:
-        result: list[dict[str, typing_extensions.Any]] = []
-
-        for var_name, var_obj in self.variables.items():
-            var_data = var_obj.model_dump(exclude_none=True)
-
-            if "key" not in var_data or not var_data["key"]:
-                var_data["key"] = var_name.upper()
-
-            if "value" not in var_data:
-                continue
-
-            result.append(var_data)
-
-        return result
+    # def to_api_json(
+    #     self,
+    #     exclude_none: bool = True,
+    # ) -> dict[str, typing_extensions.Any]:
+    #     data = self.model_dump(
+    #         exclude_none=exclude_none,
+    #         mode="json",
+    #         by_alias=False,
+    #     )
+    #     return data

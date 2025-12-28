@@ -1,14 +1,17 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from .base_settings import BaseSettings
+from .variables import Variable
 
 
 class SharedRunnersSetting(str, Enum):
-    DISABLED = "disabled_and_unoverridable"
+    DISABLED_AND_UNOVERRIDABLE = "disabled_and_unoverridable"
+    DISABLED_AND_OVERRIDABLE = "disabled_and_overridable"
     ENABLED = "enabled"
+    # DISABLED_WITH_OVERRIDE = "disabled_with_override"
 
 
 class GroupSettings(BaseSettings):
@@ -46,7 +49,7 @@ class GroupSettings(BaseSettings):
     math_rendering_limits_enabled: Optional[bool] = None
     lock_math_rendering_limits_enabled: Optional[bool] = None
 
-    shared_runners_setting: SharedRunnersSetting = SharedRunnersSetting.DISABLED
+    shared_runners_setting: Optional[SharedRunnersSetting] = None
     extra_shared_runners_minutes_limit: Optional[int] = Field(None, ge=0)  # locked
     shared_runners_minutes_limit: Optional[int] = Field(None, ge=0)  # locked
 
@@ -54,3 +57,8 @@ class GroupSettings(BaseSettings):
     emails_disabled: Optional[bool] = None
     mentions_disabled: Optional[bool] = None
     step_up_auth_required_oauth_provider: Optional[str] = None
+
+
+class GroupConfig(BaseModel):
+    settings: Optional[GroupSettings] = None
+    variables: Optional[dict[str, Variable]] = None
