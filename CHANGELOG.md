@@ -3,11 +3,11 @@
 ### [0.1.2] - 2025-12-29
 
 #### Added
-- **New Configuration Structure**: 
+- **New Configuration Structure**:
   - Added `group_config` and `project_config` sections with nested `settings` and `variables`
   - Added `groups` and `projects` root-level arrays for specifying target entities
   - Introduced `ConfigModel` for structured configuration validation
-  
+
 - **New Features**:
   - Support for protected branches configuration (stub implementation)
   - Enhanced error logging with JSON data dump for debugging
@@ -20,12 +20,12 @@
   - `project_settings` → `project_config.settings`
   - Variables now nested under `group_config.variables` and `project_config.variables`
   - Root-level `groups` and `projects` arrays for target specification
-  
+
 - **BREAKING**: CLI interface modified:
   - `Pivlabform` constructor now requires `config_file` parameter
   - Removed `config_file` parameter from `process_manual_configuration()` and `process_auto_configuration()`
   - CLI configuration is loaded once during initialization
-  
+
 - **Code Structure**:
   - Extracted logging setup to separate `_logger.py` module
   - Refactored variable processing with `_normalize_variables()` helper
@@ -38,7 +38,7 @@
   - Modified `SECRET_TOKEN` value format and masking settings
   - Added example target entities in configuration
 
-- **Enum Values**: 
+- **Enum Values**:
   - Updated `SharedRunnersSetting` enum with additional options: `DISABLED_AND_OVERRIDABLE`
 
 #### Fixed
@@ -48,7 +48,7 @@
 - **Configuration Loading**: Fixed early loading and validation of config file
 
 #### Removed
-- **Deprecated Functions**: 
+- **Deprecated Functions**:
   - Removed `get_variables_json()` helper function
   - Removed old `Variables` model class
   - Removed redundant color logging setup from `_helpers.py`

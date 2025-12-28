@@ -7,8 +7,8 @@ import typing_extensions
 import yaml
 
 from . import _consts
-from .gitlab.models import GroupSettings, Variable
 from ._logger import LOGGER
+from .gitlab.models import GroupSettings, Variable
 
 
 def get_resource_from_entity_type(entity_type: str) -> str:

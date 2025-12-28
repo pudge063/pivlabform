@@ -1,9 +1,9 @@
+import typing_extensions
 from pydantic import BaseModel, ConfigDict
 from typing_extensions import Optional
-import typing_extensions
 
-from .project import ProjectConfig
 from .group import GroupConfig
+from .project import ProjectConfig
 
 # from ..._logger import LOGGER
 # import json

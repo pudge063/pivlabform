@@ -1,7 +1,8 @@
 import logging
-import colorlog
-import sys
 import os
+import sys
+
+import colorlog
 
 
 def setup_logger():

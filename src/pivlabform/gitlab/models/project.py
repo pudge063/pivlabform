@@ -4,8 +4,8 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from .base_settings import BaseSettings
-from .variables import Variable
 from .protected_branches import ProtectedBranches
+from .variables import Variable
 
 
 class Visibility(str, Enum):
