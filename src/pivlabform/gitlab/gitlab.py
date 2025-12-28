@@ -4,8 +4,8 @@ import sys
 import requests
 import typing_extensions
 
-from .. import _helpers
-from .._helpers import LOGGER
+from ..utils import _helpers
+from ..utils._helpers import LOGGER
 
 
 class GitLab:

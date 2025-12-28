@@ -1,8 +1,0 @@
-group_settings:
-  description: "test manual description for group"
-project_settings:
-  description: "test manual description for project"
-groups:
-  - sandbox/pivlabform-tests
-projects:
-  - sandbox/pivlabform-tests/test-project-2

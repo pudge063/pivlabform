@@ -1,5 +1,89 @@
 ## Changelog
 
+### [0.2.0] - 2025-12-29
+
+#### Added
+- **New CI/CD Jobs**:
+  - Added `validate` job to GitLab CI pipeline for configuration validation
+  - Introduced `.base_job` template for shared CI configuration
+  - Added pre-commit validation job with `DEBUG=true` environment variable
+
+- **Code Structure**:
+  - Created `utils` module to organize helper functions
+  - Reorganized imports and module structure for better maintainability
+
+- **Configuration Management**:
+  - Added centralized configuration template at `configurations/templates/global_template.yaml`
+
+#### Changed
+- **BREAKING**: **Major CLI Restructuring**:
+  - Renamed main entry point from `pivlabform.main:main` to `pivlabform.cli:cli` in `pyproject.toml`
+  - Moved CLI logic from `_cli_logic.py` to `cli.py` module
+  - Removed `__main__.py` in favor of direct CLI invocation
+  - Updated imports throughout the codebase to use new module structure
+
+- **BREAKING**: **Configuration Files Cleanup**:
+  - Removed all example configuration files:
+    - `configurations/custom_config.yaml`
+    - `configurations/groups.yaml`
+    - `configurations/groups_config.yaml`
+    - `configurations/pivlabform-test.yaml`
+    - `configurations/projects_config.yaml`
+    - `configurations/protected_branches.yaml`
+    - `configurations/single_project.yaml`
+  - Configuration examples now centralized in template directory
+
+- **BREAKING**: **Model Structure Refactor**:
+  - Consolidated model classes into `entiry_settings.py`
+  - Removed separate `base_settings.py`, `group.py`, and `project.py` model files
+  - Simplified imports in `__init__.py`
+  - Updated `ConfigModel` to import from new consolidated module
+
+- **CI/CD Pipeline**:
+  - Changed default image from `python:3.11` to `pre-commit:6.0.0`
+  - Added `interruptible: false` to default job configuration
+  - Enhanced pre-commit job with `-v` (verbose) flag
+  - Restructured CI pipeline using job inheritance
+
+- **Protected Branches Model**:
+  - Simplified `ProtectedBranch` model by removing `name` field requirement
+  - Updated import from `typing` to `typing_extensions`
+  - Removed `ProtectedBranches` wrapper class
+
+- **Error Handling**:
+  - Changed logging level for configuration JSON from `info` to `debug`
+  - Improved logging messages with better formatting
+
+- **Dependencies**:
+  - Added `.mypy_cache` to `.gitignore`
+
+#### Fixed
+- **Logging**: Fixed import paths for logger and helper functions
+- **Code Organization**: Cleaned up circular dependencies and import structure
+- **Type Safety**: Improved type annotations throughout the codebase
+
+#### Removed
+- **Deprecated Modules**:
+  - `_cli_logic.py` - CLI logic moved to `cli.py`
+  - `_consts.py` - Constants moved elsewhere
+  - `_helpers.py` - Helpers moved to `utils/_helpers.py`
+  - `_logger.py` - Logger moved to `utils/_logger.py`
+  - `main.py` - Main entry point replaced by CLI module
+  - `__main__.py` - Python module entry point removed
+
+- **Unused Code**:
+  - Removed commented-out `to_api_json` method from `Variable` model
+  - Cleaned up redundant model classes and files
+
+#### Notes
+- This is a major restructuring release focusing on code organization and maintainability
+- All configuration examples have been consolidated into templates
+- The CLI interface has been completely reorganized for better extensibility
+- The project structure now follows better Python packaging practices
+- Configuration validation is now integrated into the CI/CD pipeline
+
+---
+
 ### [0.1.2] - 2025-12-29
 
 #### Added
@@ -103,3 +187,5 @@
 - The pre-commit configuration has been downgraded to more stable versions
 - Configuration examples have been updated with more realistic test data
 - The project metadata has been updated to reflect a more generic tool description
+
+---

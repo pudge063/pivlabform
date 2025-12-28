@@ -1,17 +1,106 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+import re
 
-from pydantic import BaseModel, ConfigDict, Field
-
-from .base_settings import BaseSettings
-from .protected_branches import ProtectedBranches
 from .variables import Variable
+from .protected_branches import ProtectedBranch
 
 
 class Visibility(str, Enum):
     PRIVATE = "private"
     INTERNAL = "internal"
     PUBLIC = "public"
+
+
+class AccessLevel(str, Enum):
+    DISABLED = "disabled"
+    PRIVATE = "private"
+    ENABLED = "enabled"
+    PUBLIC = "public"
+
+
+class EntirySettings(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    default_branch: Optional[str] = None
+    lfs_enabled: Optional[bool] = None
+    description: Optional[str] = None
+    visibility: Optional[Visibility] = None
+    auto_devops_enabled: Optional[bool] = None
+    max_artifacts_size: Optional[int] = Field(None, ge=0)
+    web_based_commit_signing_enabled: Optional[bool] = None
+    only_allow_merge_if_pipeline_succeeds: Optional[bool] = None
+    allow_merge_on_skipped_pipeline: Optional[bool] = None
+    only_allow_merge_if_all_discussions_are_resolved: Optional[bool] = None
+    request_access_enabled: Optional[bool] = None
+
+    wiki_access_level: Optional[AccessLevel] = None
+
+    @field_validator("default_branch")
+    @classmethod
+    def validate_default_branch(cls, v: str):
+        if v and not re.match(r"^[a-zA-Z0-9_\-./]+$", v):
+            raise ValueError("Invalid branch name")
+        return v
+
+
+class SharedRunnersSetting(str, Enum):
+    DISABLED_AND_UNOVERRIDABLE = "disabled_and_unoverridable"
+    DISABLED_AND_OVERRIDABLE = "disabled_and_overridable"
+    ENABLED = "enabled"
+    # DISABLED_WITH_OVERRIDE = "disabled_with_override"
+
+
+class GroupSettings(EntirySettings):
+    model_config = ConfigDict(extra="ignore")
+
+    # security
+    default_branch_protection: Optional[int] = None
+    require_two_factor_authentication: Optional[bool] = None
+    two_factor_grace_period: Optional[int] = Field(None, ge=0)
+    ip_restriction_ranges: Optional[str] = None
+    allowed_email_domains_list: Optional[str] = None
+    duo_availability: Optional[str] = None
+    duo_features_enabled: Optional[str] = None  # locked
+    lock_duo_features_enabled: Optional[str] = None  # locked
+
+    # repository
+    file_template_project_id: Optional[str] = None  # locked
+
+    # access control
+    membership_lock: Optional[bool] = None  # locked
+    prevent_sharing_groups_outside_hierarchy: Optional[bool] = None
+    prevent_forking_outside_group: Optional[bool] = None  # locked
+    share_with_group_lock: Optional[bool] = None
+    subgroup_creation_level: Optional[str] = None
+    project_creation_level: Optional[str] = None
+
+    # complience
+    unique_project_download_limit: Optional[int] = Field(None, ge=0)
+    unique_project_download_limit_interval_in_seconds: Optional[int] = Field(None, ge=0)
+    unique_project_download_limit_allowlist: Optional[str] = None
+    unique_project_download_limit_alertlist: Optional[str] = None
+    auto_ban_user_on_excessive_projects_download: Optional[bool] = None
+
+    # experemental settings
+    experiment_features_enabled: Optional[bool] = None
+    math_rendering_limits_enabled: Optional[bool] = None
+    lock_math_rendering_limits_enabled: Optional[bool] = None
+
+    shared_runners_setting: Optional[SharedRunnersSetting] = None
+    extra_shared_runners_minutes_limit: Optional[int] = Field(None, ge=0)  # locked
+    shared_runners_minutes_limit: Optional[int] = Field(None, ge=0)  # locked
+
+    enabled_git_access_protocol: Optional[str] = None
+    emails_disabled: Optional[bool] = None
+    mentions_disabled: Optional[bool] = None
+    step_up_auth_required_oauth_provider: Optional[str] = None
+
+
+class GroupConfig(BaseModel):
+    settings: Optional[GroupSettings] = None
+    variables: Optional[dict[str, Variable]] = None
 
 
 class MergeMethod(str, Enum):
@@ -25,13 +114,6 @@ class SquashOption(str, Enum):
     NEVER = "never"
     DEFAULT_ON = "default_on"
     DEFAULT_OFF = "default_off"
-
-
-class AccessLevel(str, Enum):
-    DISABLED = "disabled"
-    PRIVATE = "private"
-    ENABLED = "enabled"
-    PUBLIC = "public"
 
 
 class AutoDevopsDeployStrategy(str, Enum):
@@ -54,7 +136,7 @@ class ContainerExpirationPolicy(BaseModel):
     name_regex_keep: Optional[str] = None
 
 
-class ProjectSettings(BaseSettings):
+class ProjectSettings(EntirySettings):
     model_config = ConfigDict(extra="ignore")
 
     # Merge Request settings
@@ -74,7 +156,7 @@ class ProjectSettings(BaseSettings):
     ci_forward_deployment_enabled: Optional[bool] = None
     ci_forward_deployment_rollback_allowed: Optional[bool] = None
     ci_allow_fork_pipelines_to_run_in_parent_project: Optional[bool] = None
-    ci_id_token_sub_claim_components: Optional[List[str]] = None
+    ci_id_token_sub_claim_components: Optional[list[str]] = None
     ci_separated_caches: Optional[bool] = None
     ci_restrict_pipeline_cancellation_role: Optional[str] = None
     ci_pipeline_variables_minimum_override_role: Optional[str] = None
@@ -147,7 +229,7 @@ class ProjectSettings(BaseSettings):
     snippets_enabled: Optional[bool] = None
 
     # Topics
-    topics: Optional[List[str]] = None
+    topics: Optional[list[str]] = None
 
     # SPP (Special Pipeline Permissions)
     spp_repository_pipeline_access: Optional[bool] = None
@@ -173,7 +255,9 @@ class ProjectSettings(BaseSettings):
     snippets_access_level: Optional[AccessLevel] = None
 
 
-class ProjectConfig(BaseSettings):
+class ProjectConfig(EntirySettings):
     settings: Optional[ProjectSettings] = None
     variables: Optional[dict[str, Variable]] = None
-    protected_branches: Optional[ProtectedBranches] = None
+    protected_branches: Optional[dict[str, Optional[ProtectedBranch]]] = Field(
+        default_factory=dict
+    )

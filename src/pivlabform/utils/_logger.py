@@ -25,8 +25,8 @@ def setup_logger():
 
     logger = logging.getLogger(__name__)
 
-    debug = os.getenv("DEBUG", False)
-    logger.setLevel(logging.DEBUG) if debug else logger.setLevel(logging.INFO)
+    debug = os.getenv("DEBUG", "")
+    logger.setLevel(logging.DEBUG) if debug == "true" else logger.setLevel(logging.INFO)
 
     if not logger.handlers:
         logger.addHandler(console_handler)

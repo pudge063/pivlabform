@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import urllib.parse
@@ -8,7 +7,7 @@ import yaml
 
 from . import _consts
 from ._logger import LOGGER
-from .gitlab.models import GroupSettings, Variable
+from ..gitlab.models import Variable
 
 
 def get_resource_from_entity_type(entity_type: str) -> str:
@@ -27,18 +26,6 @@ def load_data_from_yaml(
     with open(yaml_path, "r") as f:
         data = yaml.safe_load(f)
     return data
-
-
-def get_settings_json(
-    config: dict[str, typing_extensions.Any],
-    section: str,
-) -> dict[str, typing_extensions.Any]:
-    settings = GroupSettings(**config[section])
-
-    group_settings_json = settings.to_api_json()
-    LOGGER.debug(f"group settings: {json.dumps(group_settings_json, indent=4,)}")
-
-    return group_settings_json
 
 
 def get_urlencoded_path(path: str) -> str:

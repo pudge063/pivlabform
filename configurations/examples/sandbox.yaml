@@ -1,0 +1,43 @@
+group_config:
+  settings:
+    default_branch: "master"
+    description: "sandbox group"
+  variables:
+    VARIABLE-1:
+      key: RELEASE_VERSION
+      value: "Q4_29"
+      description:
+      environment_scope:
+      filter:
+      masked: false
+      protected: false
+      raw: false
+      variable_type: env_var
+
+project_config:
+  settings:
+    description: "sandbox group"
+    default_branch: "master"
+    auto_devops_enabled: false
+    ci_config_path: ci/pipeline.gitlab-ci.yml
+  variables:
+    EXAMPLE-VAR-1:
+      key: PROJECT_VERSION
+      value: "0.1.2"
+      description:
+      environment_scope:
+      filter:
+      masked: false
+      protected: false
+      raw: false
+      variable_type: env_var
+  protected_branches:
+    master:
+      allow_force_push: true
+      merge_access_level: 40
+      push_access_level: 40
+      unprotect_access_level: 50
+    develop:
+
+groups:
+  - sandbox

@@ -3,10 +3,10 @@ import sys
 
 import typing_extensions
 
-from . import _helpers
-from ._helpers import LOGGER
 from .gitlab.gitlab import GitLab
 from .gitlab.models import ConfigModel
+from .utils import _helpers
+from .utils._helpers import LOGGER
 
 
 class Pivlabform:
@@ -20,8 +20,8 @@ class Pivlabform:
         config_model = ConfigModel(**_helpers.load_data_from_yaml(config_file))
         self.config_model_json = config_model.dump_model_to_json()
 
-        LOGGER.info(
-            f"config_model_json:\n{json.dumps(self.config_model_json, indent=4)}"
+        LOGGER.debug(
+            f"config_model_json:\n{json.dumps(self.config_model_json, indent=2)}\n"
         )
 
     def validate_configuration(
@@ -112,8 +112,7 @@ class Pivlabform:
         projects = self.config_model_json.get("projects", [])
         groups = self.config_model_json.get("groups", [])
 
-        LOGGER.warning(f"projects: {projects}")
-        LOGGER.warning(f"groups: {groups}")
+        LOGGER.info((f"config entities:\nprojects: {projects}\ngroups: {groups}\n"))
 
         project_entities: list[int] = []
         group_entities: list[int] = []
@@ -128,6 +127,7 @@ class Pivlabform:
                 sys.exit(1)
 
             if recursive:
+                LOGGER.info("finding recursive groups and projects")
                 group_entities.extend(
                     self.gl.get_all_groups_recursive(
                         id,
@@ -172,8 +172,13 @@ class Pivlabform:
             recursive=recursive,
         )
 
-        LOGGER.warning(f"projects for configuration: {projects}")
-        LOGGER.warning(f"groups for configuration: {groups}")
+        LOGGER.info(
+            (
+                "found entities for setup:\n"
+                f"projects for configuration: {projects}\n"
+                f"groups for configuration: {groups}\n"
+            )
+        )
 
         _helpers.check_validate(validate)
 

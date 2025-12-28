@@ -1,12 +1,15 @@
 import click
+import sys
 import typing_extensions
 
-from . import _consts, _helpers
-from ._helpers import LOGGER
+from .utils import _consts
+
+from .utils import _helpers
+from .utils._helpers import LOGGER
 from .pivlabform import Pivlabform
 
 
-def create_click_command():
+def cli():
     @click.command()
     @click.option(
         "--ci",
@@ -100,4 +103,4 @@ def create_click_command():
                 validate=validate,
             )
 
-    return process
+    return process(sys.argv[1:]) if len(sys.argv) > 1 else ["--help"]

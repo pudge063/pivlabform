@@ -1,18 +1,27 @@
-pre-commit:
+default:
+  interruptible: false
   image: af.headoffice.pivlab:6005/python:3.11
   tags: [immortal]
+
+.base_job:
+  variables:
+    FORCE_COLOR: 1
+    PY_COLORS: 1
+    CLICOLOR_FORCE: 1
+    PRE_COMMIT_COLOR: always
   before_script:
-    - export FORCE_COLOR=1
-    - export PY_COLORS=1
-    - export CLICOLOR_FORCE=1
-    - export PRE_COMMIT_COLOR=always
     - poetry install && . .venv/bin/activate
-  script:
-    - pre-commit run -a
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  cache:
-    paths:
-      - .cache/pre-commit
-      - .venv/
-    key: "pre-commit-cache"
+
+pre-commit:
+  image: af.headoffice.pivlab:6005/pre-commit:6.0.0
+  extends: [.base_job]
+  script:
+    - pre-commit run -a -v
+
+validate:
+  extends: [.base_job]
+  script:
+    - export DEBUG=true
+    - pivlabform -c configurations/templates/global_template.yaml -v

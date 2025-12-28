@@ -1,6 +1,0 @@
-group_settings:
-  default_branch: "master"
-  description: "test"
-groups:
-  - sandbox/test
-  - 1111

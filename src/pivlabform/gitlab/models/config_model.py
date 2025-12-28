@@ -2,18 +2,14 @@ import typing_extensions
 from pydantic import BaseModel, ConfigDict
 from typing_extensions import Optional
 
-from .group import GroupConfig
-from .project import ProjectConfig
-
-# from ..._logger import LOGGER
-# import json
+from .entiry_settings import GroupConfig, ProjectConfig
 
 
 class ConfigModel(BaseModel):
     model_config = ConfigDict(extra="allow")
 
-    project_config: Optional[ProjectConfig] = None
     group_config: Optional[GroupConfig] = None
+    project_config: Optional[ProjectConfig] = None
 
     groups: Optional[list[str | int]] = None
     projects: Optional[list[str | int]] = None
