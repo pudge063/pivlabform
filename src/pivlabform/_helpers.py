@@ -1,13 +1,15 @@
-import yaml
-import os
 import json
-import sys
-import typing_extensions
 import logging
-import colorlog
+import os
+import sys
 import urllib.parse
+
+import colorlog
+import typing_extensions
+import yaml
+
 from . import _consts
-from .gitlab.models import GroupSettings, Variables, Variable
+from .gitlab.models import GroupSettings, Variable, Variables
 
 
 def setup_logger():

@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field, ConfigDict, field_validator
-from typing import Optional, List
 from enum import Enum
+from typing import List, Optional
+
 import typing_extensions
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Visibility(str, Enum):
@@ -49,7 +50,7 @@ class BuildGitStrategy(str, Enum):
 class BaseSettings(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    default_branch: Optional[str] = "master"
+    default_branch: Optional[str] = None
     lfs_enabled: Optional[bool] = None
 
     max_artifacts_size: Optional[int] = Field(None, ge=0)

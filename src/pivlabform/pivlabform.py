@@ -1,5 +1,7 @@
-import typing_extensions
 import sys
+
+import typing_extensions
+
 from . import _helpers
 from ._helpers import LOGGER
 from .gitlab.gitlab import GitLab
@@ -52,7 +54,7 @@ class Pivlabform:
         self: typing_extensions.Self,
         path_type: typing_extensions.Optional[str],
         path: typing_extensions.Optional[str],
-        id: typing_extensions.Optional[str],
+        id: typing_extensions.Optional[int],
         config_file: str,
         recursive: bool,
         validate: bool,
@@ -105,4 +107,87 @@ class Pivlabform:
             config=config,
             entities=projects,  # pyright: ignore[reportArgumentType]
             entity_type="project",
+        )
+
+    def get_entities_list(
+        self: typing_extensions.Self,
+        config: dict[str, typing_extensions.Any],
+        recursive: bool,
+    ) -> tuple[list[int], list[int]]:
+        projects: list[str | int] = config["projects"] if "projects" in config else []
+        groups: list[str | int] = config["groups"] if "groups" in config else []
+
+        project_entities: list[int] = []
+        group_entities: list[int] = []
+
+        for group in groups:
+            if type(group) == str:
+                id = self.gl.get_entity_id_from_url(group, "group")
+            elif type(group) == int:
+                id = group
+            else:
+                LOGGER.error(f"ERROR: unknown type of group: {group} - {type(group)}")
+                sys.exit(1)
+
+            if recursive:
+                group_entities.extend(
+                    self.gl.get_all_groups_recursive(
+                        id,
+                    )  # pyright: ignore[reportArgumentType]
+                )
+                project_entities.extend(
+                    self.gl.get_all_projects_recursive(
+                        id,
+                    )  # pyright: ignore[reportArgumentType]
+                )
+            else:
+                project_entities.extend(
+                    self.gl.get_all_projects_from_group(
+                        id,
+                    )  # pyright: ignore[reportArgumentType]
+                )
+
+            group_entities.append(id)
+
+        for project in projects:
+            if type(project) == str:
+                id = self.gl.get_entity_id_from_url(project, "project")
+            elif type(project) == int:
+                id = project
+            else:
+                LOGGER.error(
+                    f"ERROR: unknown type of group: {project} - {type(project)}"
+                )
+                sys.exit(1)
+
+            project_entities.append(id)
+
+        return (group_entities, project_entities)
+
+    def process_auto_configuration(
+        self: typing_extensions.Self,
+        config_file: str,
+        recursive: bool,
+        validate: bool,
+    ):
+        config = _helpers.load_data_from_yaml(config_file)
+
+        groups, projects = self.get_entities_list(
+            config=config,
+            recursive=recursive,
+        )
+
+        LOGGER.warning(f"projects for configuration: {projects}")
+        LOGGER.warning(f"groups for configuration: {groups}")
+
+        self._process_entity_configuration(
+            config=config,
+            entities=projects,  # pyright: ignore[reportArgumentType]
+            entity_type="project",
+        )
+
+        self._process_entity_configuration(
+            config=config,
+            entities=groups,  # pyright: ignore[reportArgumentType]
+            entity_type="group",
         )

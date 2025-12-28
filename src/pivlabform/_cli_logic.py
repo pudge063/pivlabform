@@ -1,19 +1,13 @@
 import click
 import typing_extensions
-from .pivlabform import Pivlabform
-from . import _helpers
+
+from . import _consts, _helpers
 from ._helpers import LOGGER
-from . import _consts
+from .pivlabform import Pivlabform
 
 
 def create_click_command():
     @click.command()
-    @click.option(
-        "--list",
-        "-l",
-        default="configurations/custom_config.yaml",
-        help="list with configuration",
-    )
     @click.option(
         "--ci",
         is_flag=True,
@@ -69,7 +63,6 @@ def create_click_command():
         help="gitlab host url (example: `https://pivlab.space`)",
     )
     def process(
-        list: str,
         manual: typing_extensions.Optional[bool],
         type: typing_extensions.Optional[str],
         path: typing_extensions.Optional[str],
@@ -98,6 +91,12 @@ def create_click_command():
                 path_type=type,
                 path=path,
                 id=id,
+                config_file=config_file,
+                recursive=recursive,
+                validate=validate,
+            )
+        else:
+            pl.process_auto_configuration(
                 config_file=config_file,
                 recursive=recursive,
                 validate=validate,

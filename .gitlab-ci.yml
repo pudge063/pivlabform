@@ -1,0 +1,9 @@
+pre-commit:
+  image: af.headoffice.pivlab:6005/python:3.11
+  tags: [immortal]
+  before_script:
+    - poetry install && . .venv/bin/activate
+  script:
+    - pre-commit run -a
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

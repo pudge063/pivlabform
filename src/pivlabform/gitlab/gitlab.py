@@ -1,9 +1,10 @@
+import sys
+
 import requests
 import typing_extensions
-from .. import _helpers
+
+from .. import _helpers, gvars
 from .._helpers import LOGGER
-from .. import gvars
-import sys
 
 
 class GitLab:
@@ -39,9 +40,9 @@ class GitLab:
 
     def get_all_projects_from_group(
         self: typing_extensions.Self,
-        target_group: str,
-    ) -> list[str | None]:
-        all_projects: list[str | None] = []
+        target_group: int,
+    ) -> list[int | None]:
+        all_projects: list[int | None] = []
         next_page = 1
 
         while True:
@@ -72,9 +73,9 @@ class GitLab:
 
     def get_all_groups_from_group(
         self: typing_extensions.Self,
-        target_group: str,
-    ) -> list[str | None]:
-        all_groups: list[str | None] = []
+        target_group: int,
+    ) -> list[int | None]:
+        all_groups: list[int | None] = []
         next_page = 1
 
         while True:
@@ -103,8 +104,8 @@ class GitLab:
 
     def get_all_groups_recursive(
         self: typing_extensions.Self,
-        target_group: str,
-        groups: list[str | None] = [],
+        target_group: int,
+        groups: list[int | None] = [],
     ):
         LOGGER.debug(f"finding subgroups in {target_group}")
         subgroups = self.get_all_groups_from_group(target_group)
@@ -121,9 +122,9 @@ class GitLab:
 
     def get_all_projects_recursive(
         self: typing_extensions.Self,
-        target_group: str,
-        projects: list[str | None] = [],
-    ) -> list[str | None]:
+        target_group: int,
+        projects: list[int | None] = [],
+    ) -> list[int | None]:
         LOGGER.debug(f"finding projects in {target_group}")
         projects.extend(self.get_all_projects_from_group(target_group))
         LOGGER.debug(f"found projects: {projects}")
@@ -137,24 +138,11 @@ class GitLab:
 
         return projects
 
-    def get_group_id_from_url(
-        self: typing_extensions.Self,
-        group_path: str,
-    ) -> str:
-        url_path = _helpers.get_urlencoded_path(group_path)
-
-        r = self._send_gitlab_request(
-            method="GET",
-            url_postfix=f"groups/{url_path}",
-        )
-
-        return r.json()["id"]
-
     def get_entity_id_from_url(
         self: typing_extensions.Self,
         entity_path: str,
         entity_type: str,
-    ) -> str:
+    ) -> int:
         url_path = _helpers.get_urlencoded_path(entity_path)
 
         r = self._send_gitlab_request(
@@ -166,7 +154,7 @@ class GitLab:
 
     def confugure_entity(
         self: typing_extensions.Self,
-        entity_id: str | int,
+        entity_id: int | int,
         entity_type: str,
         config: dict[str, typing_extensions.Any],
     ) -> None:
@@ -182,7 +170,7 @@ class GitLab:
 
     def update_entity_variables(
         self: typing_extensions.Self,
-        entity_id: str | int,
+        entity_id: int,
         entity_type: str,
         config_variables: list[dict[str, typing_extensions.Any]],
     ):
@@ -212,6 +200,7 @@ class GitLab:
                 data=var,
             )
 
+        # COMMENT THIS BLOCK FOR DISABLE REMOVING VARIABLES
         for var in variables["delete"]:
             self._send_gitlab_request(
                 method="DELETE",
