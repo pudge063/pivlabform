@@ -4,7 +4,7 @@ import sys
 import typing_extensions
 
 from .gitlab.gitlab import GitLab
-from .gitlab.models import ConfigModel, Variable, ProtectedBranch
+from .gitlab.models import ConfigModel, ProtectedBranch, Variable
 from .utils import _helpers
 from .utils._helpers import LOGGER
 

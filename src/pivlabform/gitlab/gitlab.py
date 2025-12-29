@@ -244,7 +244,7 @@ class GitLab:
         )
 
         for branch in current_branches:
-            if not branch in config_protected_branches:
+            if branch not in config_protected_branches:
                 LOGGER.debug(f"REMOVE: {branch} not found in config")
                 self._send_gitlab_request(
                     method="DELETE",

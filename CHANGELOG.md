@@ -3,12 +3,12 @@
 ### [0.3.0] - [2025-12-29]
 
 #### Added
-- **Protected Branches Management**: 
+- **Protected Branches Management**:
   - Implemented complete CRUD operations for protected branches in GitLab
   - Added `update_entity_protected_branches()` method with full lifecycle management
   - Support for creating, updating, and deleting protected branches based on configuration
   - Added `allow_force_push` field to protected branch configuration
-  
+
 - **Enhanced Configuration Processing**:
   - Added support for protected branches in entity configuration processing
   - Improved configuration extraction with typed access to settings, variables, and protected branches
@@ -30,18 +30,18 @@
   - Smart comparison of existing vs configured branch settings
   - Conditional updates only when configurations differ
   - Support for `allow_force_push` boolean flag
-  
+
 - **Comprehensive Logging**:
   - Added detailed debug logging for branch comparison operations
   - Clear indication of CREATE, REMOVE, and SKIP operations
   - JSON-formatted output for configuration comparison
 
 #### Technical Improvements
-- **Code Organization**: 
+- **Code Organization**:
   - Consolidated protected branch logic into dedicated method
   - Improved type hints and documentation
   - Better separation of concerns in configuration processing
-  
+
 - **Error Handling**:
   - Robust parsing of GitLab API responses for protected branches
   - Graceful handling of missing configuration sections
