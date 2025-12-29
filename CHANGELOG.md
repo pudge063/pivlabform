@@ -1,5 +1,75 @@
 ## Changelog
 
+### [0.3.0] - [2025-12-29]
+
+#### Added
+- **Protected Branches Management**:
+  - Implemented complete CRUD operations for protected branches in GitLab
+  - Added `update_entity_protected_branches()` method with full lifecycle management
+  - Support for creating, updating, and deleting protected branches based on configuration
+  - Added `allow_force_push` field to protected branch configuration
+
+- **Enhanced Configuration Processing**:
+  - Added support for protected branches in entity configuration processing
+  - Improved configuration extraction with typed access to settings, variables, and protected branches
+  - Added comprehensive debug logging for protected branch operations
+
+- **Model Enhancements**:
+  - Added `ProtectedBranch` model to public exports in `__init__.py`
+  - Enhanced `ConfigModel` with proper JSON serialization mode
+
+#### Changed
+- **BREAKING**: Configuration structure now properly supports protected branches at entity level
+- **API Client**: Replaced placeholder `protect_branches()` method with fully functional implementation
+- **Serialization**: Updated `ConfigModel.dump_model_to_json()` to use `mode="json"` for proper enum serialization
+- **Model Structure**: Moved `ProtectedBranch` model to main exports for better accessibility
+
+#### Features
+- **Intelligent Branch Management**:
+  - Automatic detection of branches that need to be removed (not in configuration)
+  - Smart comparison of existing vs configured branch settings
+  - Conditional updates only when configurations differ
+  - Support for `allow_force_push` boolean flag
+
+- **Comprehensive Logging**:
+  - Added detailed debug logging for branch comparison operations
+  - Clear indication of CREATE, REMOVE, and SKIP operations
+  - JSON-formatted output for configuration comparison
+
+#### Technical Improvements
+- **Code Organization**:
+  - Consolidated protected branch logic into dedicated method
+  - Improved type hints and documentation
+  - Better separation of concerns in configuration processing
+
+- **Error Handling**:
+  - Robust parsing of GitLab API responses for protected branches
+  - Graceful handling of missing configuration sections
+  - Proper validation of branch names and access levels
+
+#### Configuration Example:
+```yaml
+project_config:
+  protected_branches:
+    master:
+      merge_access_level: 40
+      push_access_level: 40
+      unprotect_access_level: 50
+      allow_force_push: false
+    develop:
+      merge_access_level: 30
+      push_access_level: 30
+      allow_force_push: true
+```
+
+#### Notes
+- This release completes the protected branches feature that was previously a TODO
+- Configuration now supports the full GitLab protected branches API capabilities
+- The implementation follows GitLab's API constraints (DELETE + POST for updates)
+- All operations are idempotent and will only make changes when necessary
+
+---
+
 ### [0.2.0] - 2025-12-29
 
 #### Added

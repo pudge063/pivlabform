@@ -219,6 +219,66 @@ class GitLab:
                 ),
             )
 
-    def protect_branches(self: typing_extensions.Self) -> None:
-        # TODO: function for configure protected branches in projects
-        pass
+    def update_entity_protected_branches(
+        self: typing_extensions.Self,
+        entity_id: int,
+        entity_type: str,
+        config_protected_branches: dict[str, typing_extensions.Any],
+    ) -> None:
+        r = self._send_gitlab_request(
+            method="GET",
+            url_postfix=(
+                f"{_helpers.get_resource_from_entity_type(entity_type)}/"
+                f"{entity_id}/protected_branches"
+            ),
+        )
+
+        current_branches = _helpers.parse_protected_branches(r.json())
+
+        LOGGER.debug(f"current_branches:\n{json.dumps(current_branches, indent=2)}")
+        LOGGER.debug(
+            (
+                f"config_protected_branches:\n"
+                f"{json.dumps(config_protected_branches, indent=2)}"
+            )
+        )
+
+        for branch in current_branches:
+            if branch not in config_protected_branches:
+                LOGGER.debug(f"REMOVE: {branch} not found in config")
+                self._send_gitlab_request(
+                    method="DELETE",
+                    url_postfix=(
+                        f"{_helpers.get_resource_from_entity_type(entity_type)}/"
+                        f"{entity_id}/protected_branches/{branch}"
+                    ),
+                )
+
+        for branch in config_protected_branches:
+            if branch in current_branches:
+                if not config_protected_branches[branch] == current_branches[branch]:
+                    LOGGER.debug(f"REMOVE: {branch} in entity and config has diff")
+                    self._send_gitlab_request(
+                        method="DELETE",
+                        url_postfix=(
+                            f"{_helpers.get_resource_from_entity_type(entity_type)}/"
+                            f"{entity_id}/protected_branches/{branch}"
+                        ),
+                    )
+                else:
+                    LOGGER.debug(f"SKIP: {branch} in entity and config are equals")
+                    continue
+
+            branch_data = {"name": branch}
+            branch_params = config_protected_branches[branch]
+            if branch_params:
+                branch_data.update(branch_params)
+            LOGGER.debug(f"CREATE: {branch} added to entity")
+            self._send_gitlab_request(
+                method="POST",
+                url_postfix=(
+                    f"{_helpers.get_resource_from_entity_type(entity_type)}/"
+                    f"{entity_id}/protected_branches"
+                ),
+                data=branch_data,
+            )

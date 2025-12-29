@@ -4,7 +4,7 @@ import sys
 import typing_extensions
 
 from .gitlab.gitlab import GitLab
-from .gitlab.models import ConfigModel
+from .gitlab.models import ConfigModel, ProtectedBranch, Variable
 from .utils import _helpers
 from .utils._helpers import LOGGER
 
@@ -24,30 +24,46 @@ class Pivlabform:
             f"config_model_json:\n{json.dumps(self.config_model_json, indent=2)}\n"
         )
 
-    def validate_configuration(
-        self: typing_extensions.Self,
-    ):
-        # TODO: validation for CI with dry-run
-        pass
-
     def _process_entity_configuration(
         self: typing_extensions.Self,
         entities: list[int | None],
         entity_type: str,
     ) -> None:
         for entity in entities:
+            entity_config: dict[str, typing_extensions.Any] = (
+                self.config_model_json.get(f"{entity_type}_config", {})
+            )
+
+            settings: dict[str, typing_extensions.Any] = entity_config.get(
+                "settings", {}
+            )
+
+            variables: list[dict[str, Variable]] = entity_config.get(
+                "variables",
+                [],
+            )
+
+            protected_branches: dict[str, ProtectedBranch] = entity_config.get(
+                "protected_branches",
+                {},
+            )
+
             self.gl.confugure_entity(
                 entity_id=entity,  # type: ignore
                 entity_type=entity_type,
-                config=self.config_model_json[f"{entity_type}_config"]["settings"],  # type: ignore
+                config=settings,
             )
 
             self.gl.update_entity_variables(
                 entity_id=entity,  # type: ignore
                 entity_type=entity_type,
-                config_variables=self.config_model_json[f"{entity_type}_config"][
-                    "variables"
-                ],
+                config_variables=variables,
+            )
+
+            self.gl.update_entity_protected_branches(
+                entity_id=entity,  # type: ignore
+                entity_type=entity_type,
+                config_protected_branches=protected_branches,
             )
 
     def process_manual_configuration(

@@ -1,0 +1,14 @@
+project_config:
+  settings:
+    description: ""
+  protected_branches:
+    master:
+      allow_force_push: false
+      merge_access_level: 40
+      push_access_level: 40
+      unprotect_access_level: 40
+    develop:
+      allow_force_push: true
+      merge_access_level: 30
+      push_access_level: 30
+      unprotect_access_level: 40

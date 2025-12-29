@@ -157,3 +157,41 @@ def _are_variables_equal(var1: Variable, var2: Variable) -> bool:
             return False
 
     return True
+
+
+def _get_access_level(
+    branch_data: dict[str, typing_extensions.Any],
+    access_type: str,
+) -> int | None:
+    direct_key = f"{access_type}_access_level"
+    if direct_key in branch_data:
+        return branch_data[direct_key]
+
+    plural_key = f"{access_type}_access_levels"
+    if plural_key in branch_data and branch_data[plural_key]:
+        return branch_data[plural_key][0].get("access_level")
+
+    return None
+
+
+def parse_protected_branches(branches_list: list[dict[str, typing_extensions.Any]]):
+    current_branches: dict[str, typing_extensions.Any] = {}
+
+    for branch_data in branches_list:
+        branch_name = branch_data.get("name")
+        if not branch_name:
+            continue
+
+        merge_access_level = _get_access_level(branch_data, "merge")
+        push_access_level = _get_access_level(branch_data, "push")
+        unprotect_access_level = _get_access_level(branch_data, "unprotect")
+        allow_force_push = branch_data.get("allow_force_push")
+
+        current_branches[branch_name] = {
+            "merge_access_level": merge_access_level,
+            "push_access_level": push_access_level,
+            "unprotect_access_level": unprotect_access_level,
+            "allow_force_push": allow_force_push,
+        }
+
+    return current_branches
