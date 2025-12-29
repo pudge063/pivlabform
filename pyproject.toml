@@ -1,6 +1,6 @@
 [project]
 name = "pivlabform"
-version = "0.2.0"
+version = "0.3.0"
 description = "PivLabForm - GitLab as Code"
 authors = [
     {name = "Arsenii Nikulin",email = "studentq.work@yandex.ru"}

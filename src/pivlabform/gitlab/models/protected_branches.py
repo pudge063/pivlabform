@@ -19,7 +19,6 @@ class ProtectedBranch(BaseModel):
 
     # TODO: fields for Premium and Ultimate only
     # FIXME: not supports multy access
-    # allow_force_push: Optional[bool] = None
     # allowed_to_merge: Optional[list[dict[str, typing_extensions.Any]]] = None
     # allowed_to_push: Optional[list[dict[str, typing_extensions.Any]]] = None
     # allowed_to_unprotect: Optional[list[dict[str, typing_extensions.Any]]] = None
@@ -28,3 +27,4 @@ class ProtectedBranch(BaseModel):
     merge_access_level: Optional[AccessLevelEnum] = None
     push_access_level: Optional[AccessLevelEnum] = None
     unprotect_access_level: Optional[AccessLevelEnum] = None
+    allow_force_push: Optional[bool] = None

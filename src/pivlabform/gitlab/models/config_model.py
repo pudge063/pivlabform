@@ -15,4 +15,4 @@ class ConfigModel(BaseModel):
     projects: Optional[list[str | int]] = None
 
     def dump_model_to_json(self) -> dict[str, typing_extensions.Any]:
-        return self.model_dump(exclude_none=True)
+        return self.model_dump(exclude_none=True, mode="json")
