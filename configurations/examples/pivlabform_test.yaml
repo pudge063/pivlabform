@@ -1,0 +1,20 @@
+group_settings:
+  settings:
+    default_branch:
+    lfs_enabled:
+    description:
+  variables:
+    VARIABLE-1:
+      key: RELEASE_VERSION
+      value: "Q4_29"
+      description:
+      environment_scope:
+      filter:
+      masked: false
+      protected: false
+      raw: false
+      variable_type: env_var
+
+groups:
+  - sandbox/pivlabform-tests
+projects:

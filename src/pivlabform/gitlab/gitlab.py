@@ -35,6 +35,7 @@ class GitLab:
 
         if not r.ok:
             LOGGER.error(f"ERROR: {r.status_code}:{r.text}")
+            LOGGER.error(f"URL: {self.gitlab_api_url}/{url_postfix}")
             LOGGER.error(f"DATA:\n{json.dumps(data, indent=4)}")
             sys.exit(1)
 
