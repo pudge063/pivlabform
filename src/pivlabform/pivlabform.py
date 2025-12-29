@@ -30,6 +30,7 @@ class Pivlabform:
         entity_type: str,
     ) -> None:
         for entity in entities:
+            LOGGER.info(f"process_entity_configuration: {entity}")
             entity_config: dict[str, typing_extensions.Any] = (
                 self.config_model_json.get(f"{entity_type}_config", {})
             )
@@ -48,11 +49,12 @@ class Pivlabform:
                 {},
             )
 
-            self.gl.confugure_entity(
-                entity_id=entity,  # type: ignore
-                entity_type=entity_type,
-                config=settings,
-            )
+            if settings:
+                self.gl.confugure_entity(
+                    entity_id=entity,  # type: ignore
+                    entity_type=entity_type,
+                    config=settings,
+                )
 
             self.gl.update_entity_variables(
                 entity_id=entity,  # type: ignore
@@ -60,6 +62,7 @@ class Pivlabform:
                 config_variables=variables,
             )
 
+            LOGGER.warning(f"{entity_type} + {entity}")
             self.gl.update_entity_protected_branches(
                 entity_id=entity,  # type: ignore
                 entity_type=entity_type,

@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing_extensions import Optional
 
 
@@ -15,6 +15,7 @@ class AccessLevelEnum(int, Enum):
 
 
 class ProtectedBranch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     # name: str = Field(..., min_length=2, max_length=255)
 
     # TODO: fields for Premium and Ultimate only

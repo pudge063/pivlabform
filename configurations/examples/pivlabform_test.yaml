@@ -1,8 +1,9 @@
-group_settings:
+group_config:
   settings:
-    default_branch:
-    lfs_enabled:
-    description:
+    default_branch: "master"
+    lfs_enabled: false
+    description: "pivlabform_test"
+    max_artifacts_size: "10"
   variables:
     VARIABLE-1:
       key: RELEASE_VERSION
@@ -15,6 +16,49 @@ group_settings:
       raw: false
       variable_type: env_var
 
+project_config:
+  settings:
+    description: "test project"
+    ci_config_path: pipeline.gitlab-ci.yml
+    merge_commit_template: |
+      TItle: %{title}
+      Merge branch '%{source_branch}' into '%{target_branch}
+      Description: %{description}
+      Linked issues: %{issues}
+      Approved by: %{approved_by}
+    squash_commit_template: |
+      Merge branch '%{source_branch}' into '%{target_branch}
+      Description: %{description}
+    suggestion_commit_message: |
+      test suggestion_commit_message
+    merge_method: ff
+    squash_option: default_on
+    only_allow_merge_if_pipeline_succeeds: true
+    only_allow_merge_if_all_discussions_are_resolved: true
+  variables:
+    TEST:
+      key: NEXUS_URL
+      value: "af.headoffice.pivlab"
+      description: nexus address
+      environment_scope:
+      filter:
+      masked: false
+      protected: false
+      raw: false
+      variable_type: env_var
+  protected_branches:
+    master:
+      allow_force_push: false
+      merge_access_level: 40
+      push_access_level: 40
+      unprotect_access_level: 40
+    develop:
+      allow_force_push: true
+      merge_access_level: 30
+      push_access_level: 30
+      unprotect_access_level: 40
+
 groups:
   - sandbox/pivlabform-tests
 projects:
+  - 2316
