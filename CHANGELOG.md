@@ -1,5 +1,104 @@
 ## Changelog
 
+### [0.3.1] - [2025-12-29]
+
+#### Added
+- **Enhanced Configuration Examples**:
+  - Added comprehensive example configuration `pivlabform_test.yaml` with real-world settings
+  - Included examples for protected branches, merge templates, CI/CD configurations
+  - Added template examples for merge commit, squash commit, and suggestion messages
+
+- **Top-Level Group Detection**:
+  - Added `is_top_level_group()` method to automatically detect root-level groups
+  - Implemented intelligent skipping of protected branches for subgroups
+  - Added validation for GitLab API restrictions on subgroup configurations
+
+- **Pipeline Role Management**:
+  - Introduced `PipelineCancellationRole` enum for standardized role definitions
+  - Added type-safe role configurations for CI/CD pipeline settings
+
+- **Enhanced Model Documentation**:
+  - Added comprehensive docstrings to all model fields
+  - Included GitLab documentation links and feature availability notes
+  - Added warnings for deprecated and premium-only features
+
+#### Changed
+- **BREAKING**: Renamed `EntirySettings` to `EntitySettings` (fixed typo)
+- **Model Structure**:
+  - Updated `ProjectConfig` to inherit from `BaseModel` instead of `EntitySettings`
+  - Added proper `ConfigDict` configuration to models
+  - Enhanced `ProtectedBranch` model with `extra="forbid"` validation
+
+- **Configuration File Structure**:
+  - Updated example files to use new `group_config` and `project_config` structure
+  - Added realistic configuration values for testing
+  - Removed placeholder comments in template files
+
+- **GitLab API Integration**:
+  - Improved error handling for protected branches in subgroups
+  - Added proper logging for entity processing stages
+  - Enhanced debugging output with JSON formatting
+
+#### Fixed
+- **Line Length Warnings**: Added per-file ignore for `entiry_settings.py` in flake8 configuration
+- **Model Validation**: Fixed inheritance structure in configuration models
+- **API Compatibility**: Ensured proper handling of GitLab API restrictions
+- **Logging**: Improved debug and warning messages for better troubleshooting
+
+#### Features
+- **Comprehensive Protected Branches**:
+  - Support for `allow_force_push` configuration
+  - Proper access level management (merge, push, unprotect)
+  - Automatic detection of existing branch configurations
+
+- **Template Support**:
+  - Added support for `merge_commit_template` with GitLab variables
+  - Added `squash_commit_template` configuration
+  - Support for multi-line template strings in YAML configuration
+
+- **Enhanced Type Safety**:
+  - Added `PipelineCancellationRole` enum for CI role management
+  - Improved type hints throughout the codebase
+  - Better validation of configuration parameters
+
+#### Configuration Improvements
+```yaml
+# New features demonstrated:
+project_config:
+  settings:
+    merge_commit_template: |
+      Title: %{title}
+      Merge branch '%{source_branch}' into '%{target_branch}
+      Description: %{description}
+      Linked issues: %{issues}
+      Approved by: %{approved_by}
+
+    ci_config_path: pipeline.gitlab-ci.yml
+    merge_method: ff
+    squash_option: default_on
+
+  protected_branches:
+    master:
+      allow_force_push: false
+      merge_access_level: 40
+      push_access_level: 40
+      unprotect_access_level: 40
+```
+
+#### Technical Improvements
+- **Code Organization**: Restructured model imports and exports
+- **Error Handling**: Graceful degradation for unsupported subgroup features
+- **Documentation**: Comprehensive field-level documentation for all settings
+- **Validation**: Added Pydantic validation rules for better configuration safety
+
+#### Notes
+- This release significantly improves the robustness of configuration management
+- Subgroup limitations are now properly handled with clear warnings
+- Template support enables consistent commit message formatting across projects
+- The example configuration provides a comprehensive reference for real-world usage
+
+---
+
 ### [0.3.0] - [2025-12-29]
 
 #### Added

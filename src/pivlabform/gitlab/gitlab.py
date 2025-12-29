@@ -35,6 +35,7 @@ class GitLab:
 
         if not r.ok:
             LOGGER.error(f"ERROR: {r.status_code}:{r.text}")
+            LOGGER.error(f"URL: {self.gitlab_api_url}/{url_postfix}")
             LOGGER.error(f"DATA:\n{json.dumps(data, indent=4)}")
             sys.exit(1)
 
@@ -182,8 +183,6 @@ class GitLab:
         )
         current_variables = r.json()
 
-        # LOGGER.warning(config_variables)
-
         variables = _helpers.check_variables_diff(current_variables, config_variables)
 
         for var in variables["create"]:
@@ -232,6 +231,11 @@ class GitLab:
                 f"{entity_id}/protected_branches"
             ),
         )
+        LOGGER.warning(json.dumps(r.json()))
+
+        if entity_type == "group" and not self.is_top_level_group(entity_id):
+            LOGGER.info(f"SKIP: group {entity_id} is not top-level")
+            return None
 
         current_branches = _helpers.parse_protected_branches(r.json())
 
@@ -282,3 +286,12 @@ class GitLab:
                 ),
                 data=branch_data,
             )
+
+    def is_top_level_group(self, group_id: int) -> bool:
+        response = self._send_gitlab_request(
+            method="GET",
+            url_postfix=f"groups/{group_id}",
+        )
+        group_info = response.json()
+
+        return group_info.get("parent_id") is None

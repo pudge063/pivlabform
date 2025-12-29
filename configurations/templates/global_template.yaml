@@ -18,25 +18,25 @@ group_config:
     step_up_auth_required_oauth_provider:
     subgroup_creation_level:
     two_factor_grace_period:
-    extra_shared_runners_minutes_limit: # locked
-    file_template_project_id: # locked
-    membership_lock: # locked
-    prevent_forking_outside_group: # locked
-    shared_runners_minutes_limit: # locked
-    unique_project_download_limit: # locked
-    unique_project_download_limit_interval_in_seconds: # locked
-    unique_project_download_limit_allowlist: # locked
-    unique_project_download_limit_alertlist: # locked
-    auto_ban_user_on_excessive_projects_download: # locked
-    ip_restriction_ranges: # locked
-    allowed_email_domains_list: # locked
-    wiki_access_level: # locked
+    extra_shared_runners_minutes_limit:
+    file_template_project_id:
+    membership_lock:
+    prevent_forking_outside_group:
+    shared_runners_minutes_limit:
+    unique_project_download_limit:
+    unique_project_download_limit_interval_in_seconds:
+    unique_project_download_limit_allowlist:
+    unique_project_download_limit_alertlist:
+    auto_ban_user_on_excessive_projects_download:
+    ip_restriction_ranges:
+    allowed_email_domains_list:
+    wiki_access_level:
     duo_availability:
     experiment_features_enabled:
     math_rendering_limits_enabled:
     lock_math_rendering_limits_enabled:
-    duo_features_enabled: # locked
-    lock_duo_features_enabled: # locked
+    duo_features_enabled:
+    lock_duo_features_enabled:
     max_artifacts_size:
     web_based_commit_signing_enabled:
     only_allow_merge_if_pipeline_succeeds:
@@ -171,7 +171,5 @@ project_config:
 
 groups:
   - sandbox/pivlabform-tests
-
 projects:
-  - sandbox/pivlabform-tests/test-project-2
-  - 2306
+  - sandbox/pivlabform-tests/test-project

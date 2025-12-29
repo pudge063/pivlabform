@@ -1,6 +1,6 @@
 """PivLabForm - GitLab as Code"""
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __author__ = "Arsenii Nikulin"
 
 from .cli import cli
