@@ -407,12 +407,31 @@ pivlabform -c config.yaml
 4. Update documentation
 5. Submit pull request
 
-## License
+## 📜 Licensing
 
-[PivLab Software License Agreement](./LICENSE.md)
+This software is available under a **dual-licensing model**:
 
-## Support
+### 1. For the Community and Open Source Projects: GNU Affero General Public License v3.0 (AGPL-3.0)
+- You may **freely use, study, modify, and distribute** this library.
+- **If you modify the library and make it available over a network (e.g., as a web service or SaaS), you are obligated to make the complete source code of your modifications available** to all users of your service.
+- This is a classic strong copyleft free software license that ensures improvements remain open.
 
-- Issue Tracker: [GitLab Issues]
-- Documentation: [Project Wiki]
-- CI/CD Examples: `.gitlab-ci.yml`
+### 2. For Commercial and Proprietary Use: Commercial License
+If the terms of the AGPL-3.0 are incompatible with your business model (for example, you do not wish to open-source your product's code), you may purchase a **commercial license** from the copyright holder.
+
+**The commercial license grants:**
+- The right to use the library in **closed-source (proprietary) products**.
+- Exemption from the AGPL's source code disclosure requirements.
+- Direct warranties and priority support.
+- The possibility of requesting custom features.
+
+---
+
+**To inquire about a commercial license:**  
+📧 **Email:** studentq.work@yandex.ru  
+💬 **Telegram:** @pudge_vibes  
+*Please include in your email: company name, intended use case, and approximate number of developers.*
+
+---
+
+*Copyright (c) 2025 PivLab. All rights reserved.*
