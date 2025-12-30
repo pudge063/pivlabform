@@ -1,5 +1,77 @@
 ## Changelog
 
+### [0.5.0] - 2025-12-31
+
+#### Breaking Changes
+- **License Change**: Switched from PivLab Proprietary License to GNU Affero General Public License v3.0 (AGPLv3)
+
+#### Added
+- **GNU AGPLv3 License**: Full license text removed
+- **AGPL Compliance Documentation**: All references to AGPL requirements
+- **Source Code Sharing Mandates**: AGPL's network use and source distribution requirements
+
+#### Removed
+- **Proprietary License**: Added PivLab Software License Agreement
+  - Dual-license model: Free for non-commercial use, paid for commercial use
+  - Clear definitions of Commercial vs. Non-Commercial use
+  - Intellectual property retention by PivLab
+  - Russian Federation governing law (Moscow jurisdiction)
+  - Contact information for licensing inquiries
+
+- **Commercial Licensing Information**:
+  - Contact email: `studentq.work@yandex.ru`
+  - Telegram contact: `@pudge_vibes`
+  - Explicit commercial license requirement for business use
+
+- **New License Sections**:
+  - Grant of License (separate commercial/non-commercial terms)
+  - Usage restrictions and intellectual property rights
+  - Support tiers (community vs. priority)
+  - Export controls and termination conditions
+
+#### Changed
+- **README.md**: Completely restructured and simplified
+  - Removed extensive AGPL licensing explanation
+  - Replaced with link to new LICENSE.md
+  - Simplified installation instructions (removed pip install method)
+  - Streamlined documentation structure
+  - Removed detailed contributing guidelines
+  - Updated API reference examples
+
+- **Project Documentation**:
+  - Removed "Table of Contents" with 15+ sections
+  - Simplified "Overview" section
+  - Consolidated configuration examples
+  - Removed detailed troubleshooting guides
+  - Updated support information
+
+- **Source Code**:
+  - Updated internal references and imports
+
+#### Notes
+- **For Existing Users**:
+  - Non-commercial users can continue using the software freely
+  - Commercial users must contact PivLab for licensing
+  - All modifications contributed back become PivLab property
+
+- **For Contributors**:
+  - By contributing, you grant PivLab perpetual rights to your contributions
+  - Community contributions remain welcome for non-commercial improvements
+
+- **Legal Implications**:
+  - Software is no longer copyleft/open source in the traditional sense
+  - Proprietary license with controlled commercial distribution
+  - PivLab retains all intellectual property rights
+
+- **Support**:
+  - Community support via GitLab issues continues
+  - Priority support available with commercial licenses
+  - Security updates provided to all users
+
+**Important**: This release represents a fundamental change in licensing and business model. Users should review the new license terms carefully before continuing use.
+
+---
+
 ### [0.4.1] - [2025-12-30]
 
 #### Added
@@ -416,7 +488,7 @@ project_config:
   - Updated `ConfigModel` to import from new consolidated module
 
 - **CI/CD Pipeline**:
-  - Changed default image from `python:3.11` to `pre-commit:6.0.0`
+  - Changed default image for validate job from `python:3.11` to `pre-commit:6.0.0`
   - Added `interruptible: false` to default job configuration
   - Enhanced pre-commit job with `-v` (verbose) flag
   - Restructured CI pipeline using job inheritance
@@ -525,13 +597,13 @@ project_config:
 
 #### Changed
 - **CI/CD Pipeline**:
-  - Removed color environment variables from GitLab CI configuration
-  - Simplified cache configuration in `.gitlab-ci.yml`
+  - Added color environment variables from GitLab CI configuration
+  - Removed cache configuration in `.gitlab-ci.yml`
   - Updated pre-commit hook versions in `.pre-commit-config.yaml`:
-    - pre-commit-hooks from v6.0.0 to v4.4.0
-    - black from 25.12.0 to 23.11.0
-    - isort from 7.0.0 to 5.12.0
-  - Removed flake8 and mypy hooks from pre-commit configuration
+    - pre-commit-hooks from v4.4.0 to v6.0.0
+    - black from 23.11.0 to 25.12.0
+    - isort from 5.12.0 to 7.0.0
+  - Added flake8 and mypy hooks from pre-commit configuration
   - Added new pre-commit hooks: check-executables-have-shebangs, check-symlinks, mixed-line-ending
 
 - **Code Quality**:
@@ -545,16 +617,16 @@ project_config:
   - Changed default branch from unspecified to "master"
 
 - **Dependencies**:
-  - Removed type checking dependencies (mypy, types-requests, types-PyYAML, types-click)
+  - Added type checking dependencies (mypy, types-requests, types-PyYAML, types-click)
 
 #### Fixed
 - **Type Safety**:
-  - Updated `id` parameter type from `Optional[int]` to `Optional[str]` in CLI
+  - Updated `id` parameter type from `Optional[str]` to `Optional[int]` in CLI
   - Improved type handling in `_helpers.py` with pyright-compatible type annotations
   - Fixed URL construction in GitLab API client
 
 - **Code Structure**:
-  - Removed unused model files (`base_settings.py`, `group.py`, `project.py`, `variables.py`)
+  - Added model files (`base_settings.py`, `group.py`, `project.py`, `variables.py`)
   - Consolidated model imports in `__init__.py`
   - Added proper module docstrings
 

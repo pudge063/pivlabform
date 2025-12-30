@@ -1,21 +1,79 @@
 # PivLabForm - GitLab Configuration as Code
 
-## Overview
+> Manage GitLab groups, projects, and settings as code using YAML configuration files
+
+## 📑 Table of Contents
+- [🌟 Overview](#-overview)
+- [⚡ Quick Start](#-quick-start)
+- [📦 Installation](#-installation)
+- [🔧 CLI Interface](#-cli-interface)
+- [⚙️ Configuration Models](#️-configuration-models)
+- [📊 Configuration Examples](#-configuration-examples)
+- [🔌 API Reference](#-api-reference)
+- [⚠️ Error Handling](#️-error-handling)
+- [🛡️ Security Considerations](#-security-considerations)
+- [🔧 Troubleshooting](#-troubleshooting)
+- [🤝 Contributing](#-contributing)
+- [📜 Licensing](#-licensing)
+
+---
+
+## 🌟 Overview
 
 PivLabForm is a configuration management tool for GitLab that allows you to manage GitLab groups, projects, and their settings as code using YAML configuration files.
 
-## Installation
+## ⚡ Quick Start
 
+1. **Install the tool:**
 ```bash
-# Install from source
+pip install pivlabform
+```
+
+2. **Set up authentication:**
+```bash
+export GITLAB_TOKEN="your-personal-access-token"
+```
+
+3. **Create a configuration file:**
+```yaml
+# config.yaml
+groups:
+  - "sandbox/my-group"
+
+group_config:
+  settings:
+    description: "My development group"
+    visibility: "private"
+    default_branch: "main"
+```
+
+4. **Apply the configuration:**
+```bash
+pivlabform -c config.yaml
+```
+
+## 📦 Installation
+
+### From Source
+```bash
+# Clone the repository
+git clone https://gitlab.com/pivlab/pivlabform.git
+cd pivlabform
+
+# Install with Poetry
 poetry install
 
-# Install the CLI globally
+# Build and install globally
 poetry build
 pip install dist/pivlabform-*.whl
 ```
 
-## CLI Interface
+### Using pip
+```bash
+pip install pivlabform
+```
+
+## 🔧 CLI Interface
 
 ### Basic Usage
 
@@ -23,7 +81,7 @@ pip install dist/pivlabform-*.whl
 # Show help
 pivlabform --help
 
-# Auto configuration using config file
+# Apply configuration from file
 pivlabform -c configurations/templates/global_template.yaml
 
 # Manual configuration for specific entity
@@ -48,9 +106,9 @@ pivlabform -c config.yaml -v
 | `--validate` | `-v` | Only validate, don't apply changes | `False` |
 | `--gitlab-host` | | GitLab host URL | From env or default |
 
-## Configuration File Structure
+## ⚙️ Configuration Models
 
-### Configuration Schema
+### Configuration File Structure
 
 ```yaml
 # Root level configuration
@@ -77,6 +135,12 @@ projects:
   - "sandbox/pivlabform-tests/test-project-2"  # Project path
   - 2306                                       # Project ID
 ```
+
+### Pydantic models:
+- [entity settings](./src/pivlabform/gitlab/models/entity_settings.py)
+- [entity config](./src/pivlabform/gitlab/models/entity_config.py)
+- [config model](./src/pivlabform/gitlab/models/config_model.py)
+- [variables](./src/pivlabform/gitlab/models/variables.py)
 
 ### Environment Variables
 
@@ -213,7 +277,7 @@ project_config:
 - `40`: Maintainer
 - `50`: Owner
 
-## Usage Examples
+## 📊 Configuration Examples
 
 ### Example 1: Basic Group Configuration
 
@@ -296,7 +360,7 @@ projects:
   - "infrastructure/terraform-modules"
 ```
 
-## API Reference
+## 🔌 API Reference
 
 ### Core Classes
 
@@ -304,22 +368,66 @@ projects:
 Main class for configuration management.
 
 ```python
-from pivlabform import Pivlabform
+import os
 
-# Initialize with config file
-pl = Pivlabform("config.yaml", "https://gitlab.example.com")
+os.environ["DEBUG"] = "true"
+os.environ["CI_SERVER_HOST"] = "pivlab.space"
 
-# Process auto configuration
-pl.process_auto_configuration(recursive=True, validate=False)
+from pivlabform import LOGGER, GitLab
+from pivlabform.gitlab.gitlab import Entity
+from pivlabform.gitlab.models import GroupSettings, ProjectSettings
+from pivlabform.gitlab.models.entity_settings import MergeMethod
 
-# Process manual configuration
-pl.process_manual_configuration(
-    path_type="group",
-    path="sandbox/test",
-    id=None,
-    recursive=True,
-    validate=False
-)
+
+def configure_projects_in_group(group: str) -> None:
+    """
+    Procedure for confugure all projects in group with settings:
+        - default_branch: master
+        - description: configuration from test_api.py
+        - for merge needs resolve all discussions and pipeline success
+        - merge strategy: fast-forward
+
+    :param group: target group path
+    :type group: str
+    """
+    gl = GitLab()
+
+    project_settings_model = ProjectSettings(
+        default_branch="master",
+        description="configuration from test_api.py",
+        only_allow_merge_if_all_discussions_are_resolved=True,
+        only_allow_merge_if_pipeline_succeeds=True,
+        merge_method=MergeMethod.FF,
+    )
+
+    group_settings_model = GroupSettings(
+        default_branch="master",
+    )
+
+    group_id = gl.get_entity_id_from_url(group, Entity.GROUP)
+    groups = gl.get_all_groups_recursive(group_id)
+    projects = gl.get_all_projects_recursive(group_id)
+
+    LOGGER.info(f"projects for config: {projects}")
+    LOGGER.info(f"groups for config: {groups}")
+
+    for group_id in groups:
+        gl.confugure_entity(
+            entity_id=group_id,
+            entity_type=Entity.GROUP,
+            config=group_settings_model.to_api_json(),
+        )
+
+    for project_id in projects:
+        gl.confugure_entity(
+            entity_id=project_id,
+            entity_type=Entity.PROJECT,
+            config=project_settings_model.to_api_json(),
+        )
+
+
+if __name__ == "__main__":
+    configure_projects_in_group("sandbox/pivlabform-tests")
 ```
 
 #### `GitLab`
@@ -344,7 +452,7 @@ gl.update_entity_variables(
 )
 ```
 
-## Error Handling
+## ⚠️ Error Handling
 
 ### Common Errors
 
@@ -361,17 +469,7 @@ export DEBUG=true
 pivlabform -c config.yaml
 ```
 
-## Best Practices
-
-1. **Use version control** for configuration files
-2. **Validate configurations** before applying (`-v` flag)
-3. **Use environment variables** for sensitive data
-4. **Test in staging** before production
-5. **Document configuration changes**
-6. **Use meaningful variable names** and descriptions
-7. **Regularly review and update** configurations
-
-## Security Considerations
+## 🛡️ Security Considerations
 
 - Store `GITLAB_TOKEN` securely (never in version control)
 - Use masked variables for sensitive data
@@ -379,7 +477,7 @@ pivlabform -c config.yaml
 - Regularly rotate access tokens
 - Review permission inheritance in group hierarchies
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Configuration Not Applying
 1. Check entity paths/IDs are correct
@@ -399,7 +497,7 @@ pivlabform -c config.yaml
 3. Check group/project permission inheritance
 4. Verify token is not expired
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create feature branch
@@ -407,12 +505,31 @@ pivlabform -c config.yaml
 4. Update documentation
 5. Submit pull request
 
-## License
+## 📜 Licensing
 
-[PivLab Software License Agreement](./LICENSE.md)
+This software is available under a **dual-licensing model**:
 
-## Support
+### 1. For the Community and Open Source Projects: GNU Affero General Public License v3.0 (AGPL-3.0)
+- You may **freely use, study, modify, and distribute** this library.
+- **If you modify the library and make it available over a network (e.g., as a web service or SaaS), you are obligated to make the complete source code of your modifications available** to all users of your service.
+- This is a classic strong copyleft free software license that ensures improvements remain open.
 
-- Issue Tracker: [GitLab Issues]
-- Documentation: [Project Wiki]
-- CI/CD Examples: `.gitlab-ci.yml`
+### 2. For Commercial and Proprietary Use: Commercial License
+If the terms of the AGPL-3.0 are incompatible with your business model (for example, you do not wish to open-source your product's code), you may purchase a **commercial license** from the copyright holder.
+
+**The commercial license grants:**
+- The right to use the library in **closed-source (proprietary) products**.
+- Exemption from the AGPL's source code disclosure requirements.
+- Direct warranties and priority support.
+- The possibility of requesting custom features.
+
+---
+
+**To inquire about a commercial license:**
+📧 **Email:** studentq.work@yandex.ru
+💬 **Telegram:** @pudge_vibes
+*Please include in your email: company name, intended use case, and approximate number of developers.*
+
+---
+
+*Copyright (c) 2025 PivLab. All rights reserved.*
