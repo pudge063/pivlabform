@@ -1,17 +1,46 @@
 import json
 import sys
+from enum import Enum
 
 import requests
-import typing_extensions
+from typing_extensions import Any, Self
 
 from ..utils import _helpers
 from ..utils._helpers import LOGGER
 
 
+class Entity(str, Enum):
+    GROUP = "groups"
+    PROJECT = "projects"
+    SUBGROUP = "subgroups"
+
+    @property
+    def lname(self) -> str:
+        return self.name.lower()
+
+    @classmethod
+    def from_string(cls, value: str) -> "Entity":
+        value_lower = value.lower().strip()
+
+        mapping = {
+            "group": cls.GROUP,
+            "project": cls.PROJECT,
+            "subgroup": cls.SUBGROUP,
+            "g": cls.GROUP,
+            "p": cls.PROJECT,
+            "s": cls.SUBGROUP,
+        }
+
+        if value_lower in mapping:
+            return mapping[value_lower]
+        LOGGER.error(f"Unknown entity type: {value}")
+        sys.exit(1)
+
+
 class GitLab:
     def __init__(
-        self: typing_extensions.Self,
-        gitlab_host: str | None,
+        self: Self,
+        gitlab_host: str = "",
     ):
         gitlab_host = _helpers.get_gitlab_host() if not gitlab_host else gitlab_host
         self.gitlab_api_url = f"{gitlab_host}/api/v4"
@@ -22,10 +51,10 @@ class GitLab:
         )
 
     def _send_gitlab_request(
-        self: typing_extensions.Self,
+        self: Self,
         method: str = "GET",
         url_postfix: str = "",
-        data: dict[str, str | int] | typing_extensions.Any = {},
+        data: dict[str, Any] | Any = {},
     ) -> requests.Response:
         r = self.gitlab_session.request(
             method=method,
@@ -42,17 +71,17 @@ class GitLab:
         return r
 
     def get_all_projects_from_group(
-        self: typing_extensions.Self,
+        self: Self,
         target_group: int,
-    ) -> list[int | None]:
-        all_projects: list[int | None] = []
+    ) -> list[int]:
+        all_projects: list[int] = []
         next_page = 1
 
         while True:
             r = self._send_gitlab_request(
                 method="GET",
                 url_postfix=(
-                    f"groups/{target_group}/projects"
+                    f"{Entity.GROUP.value}/{target_group}/{Entity.PROJECT.value}"
                     "?pagination=keyset"
                     "&per_page=100"
                     "&order_by=id"
@@ -75,17 +104,17 @@ class GitLab:
         return all_projects
 
     def get_all_groups_from_group(
-        self: typing_extensions.Self,
+        self: Self,
         target_group: int,
-    ) -> list[int | None]:
-        all_groups: list[int | None] = []
+    ) -> list[int]:
+        all_groups: list[int] = []
         next_page = 1
 
         while True:
             r = self._send_gitlab_request(
                 method="GET",
                 url_postfix=(
-                    f"groups/{target_group}/subgroups"
+                    f"{Entity.GROUP.value}/{target_group}/{Entity.SUBGROUP.value}"
                     "?pagination=keyset"
                     "&per_page=100"
                     "&order_by=id"
@@ -106,9 +135,9 @@ class GitLab:
         return all_groups
 
     def get_all_groups_recursive(
-        self: typing_extensions.Self,
+        self: Self,
         target_group: int,
-        groups: list[int | None] = [],
+        groups: list[int] = [],
     ):
         LOGGER.debug(f"finding subgroups in {target_group}")
         subgroups = self.get_all_groups_from_group(target_group)
@@ -117,17 +146,18 @@ class GitLab:
 
         for subgroup in subgroups:
             groups = self.get_all_groups_recursive(
-                subgroup,  # type: ignore
+                subgroup,
                 groups,
             )
 
         return groups
 
     def get_all_projects_recursive(
-        self: typing_extensions.Self,
+        self: Self,
         target_group: int,
-        projects: list[int | None] = [],
-    ) -> list[int | None]:
+        projects: list[int] = [],
+    ) -> list[int]:
+
         LOGGER.debug(f"finding projects in {target_group}")
         projects.extend(self.get_all_projects_from_group(target_group))
         LOGGER.debug(f"found projects: {projects}")
@@ -135,51 +165,49 @@ class GitLab:
         subgroups = self.get_all_groups_from_group(target_group)
         for subgroup in subgroups:
             projects = self.get_all_projects_recursive(
-                subgroup,  # type: ignore
+                subgroup,
                 projects,
             )
 
         return projects
 
     def get_entity_id_from_url(
-        self: typing_extensions.Self,
+        self: Self,
         entity_path: str,
-        entity_type: str,
+        entity_type: Entity,
     ) -> int:
         url_path = _helpers.get_urlencoded_path(entity_path)
 
         r = self._send_gitlab_request(
             method="GET",
-            url_postfix=f"{_helpers.get_resource_from_entity_type(entity_type)}/{url_path}",
+            url_postfix=f"{entity_type.value}/{url_path}",
         )
 
         return r.json()["id"]
 
     def confugure_entity(
-        self: typing_extensions.Self,
+        self: Self,
         entity_id: int | int,
-        entity_type: str,
-        config: dict[str, typing_extensions.Any],
+        entity_type: Entity,
+        config: dict[str, Any],
     ) -> None:
         self._send_gitlab_request(
             method="PUT",
-            url_postfix=(
-                f"{_helpers.get_resource_from_entity_type(entity_type)}/{entity_id}"
-            ),
+            url_postfix=(f"{entity_type.value}/{entity_id}"),
             data=config,
         )
 
-        LOGGER.info(f"{entity_type} {entity_id} configured success")
+        LOGGER.debug(f"{entity_type.lname} {entity_id} configured success")
 
     def update_entity_variables(
-        self: typing_extensions.Self,
+        self: Self,
         entity_id: int,
-        entity_type: str,
-        config_variables: list[dict[str, typing_extensions.Any]],
+        entity_type: Entity,
+        config_variables: list[dict[str, Any]],
     ):
         r = self._send_gitlab_request(
             method="GET",
-            url_postfix=f"{_helpers.get_resource_from_entity_type(entity_type)}/{entity_id}/variables",
+            url_postfix=f"{entity_type.value}/{entity_id}/variables",
         )
         current_variables = r.json()
 
@@ -188,9 +216,7 @@ class GitLab:
         for var in variables["create"]:
             self._send_gitlab_request(
                 method="POST",
-                url_postfix=(
-                    f"{_helpers.get_resource_from_entity_type(entity_type)}/{entity_id}/variables"
-                ),
+                url_postfix=(f"{entity_type.value}/{entity_id}/variables"),
                 data=var,
             )
 
@@ -198,10 +224,7 @@ class GitLab:
             self._send_gitlab_request(
                 method="PUT",
                 url_postfix=(
-                    (
-                        f"{_helpers.get_resource_from_entity_type(entity_type)}/"
-                        f"{entity_id}/variables/{var['key']}"  # type: ignore
-                    )
+                    (f"{entity_type.value}/" f"{entity_id}/variables/{var['key']}")
                 ),
                 data=var,
             )
@@ -211,29 +234,22 @@ class GitLab:
             self._send_gitlab_request(
                 method="DELETE",
                 url_postfix=(
-                    (
-                        f"{_helpers.get_resource_from_entity_type(entity_type)}/"
-                        f"{entity_id}/variables/{var['key']}"  # type: ignore
-                    )
+                    (f"{entity_type.value}/" f"{entity_id}/variables/{var['key']}")
                 ),
             )
 
     def update_entity_protected_branches(
-        self: typing_extensions.Self,
+        self: Self,
         entity_id: int,
-        entity_type: str,
-        config_protected_branches: dict[str, typing_extensions.Any],
+        entity_type: Entity,
+        config_protected_branches: dict[str, Any],
     ) -> None:
         r = self._send_gitlab_request(
             method="GET",
-            url_postfix=(
-                f"{_helpers.get_resource_from_entity_type(entity_type)}/"
-                f"{entity_id}/protected_branches"
-            ),
+            url_postfix=(f"{entity_type.value}/{entity_id}/protected_branches"),
         )
-        LOGGER.warning(json.dumps(r.json()))
 
-        if entity_type == "group" and not self.is_top_level_group(entity_id):
+        if entity_type == Entity.GROUP and not self.is_top_level_group(entity_id):
             LOGGER.info(f"SKIP: group {entity_id} is not top-level")
             return None
 
@@ -253,8 +269,7 @@ class GitLab:
                 self._send_gitlab_request(
                     method="DELETE",
                     url_postfix=(
-                        f"{_helpers.get_resource_from_entity_type(entity_type)}/"
-                        f"{entity_id}/protected_branches/{branch}"
+                        f"{entity_type.value}/{entity_id}/protected_branches/{branch}"
                     ),
                 )
 
@@ -265,7 +280,7 @@ class GitLab:
                     self._send_gitlab_request(
                         method="DELETE",
                         url_postfix=(
-                            f"{_helpers.get_resource_from_entity_type(entity_type)}/"
+                            f"{entity_type.value}/"
                             f"{entity_id}/protected_branches/{branch}"
                         ),
                     )
@@ -280,17 +295,14 @@ class GitLab:
             LOGGER.debug(f"CREATE: {branch} added to entity")
             self._send_gitlab_request(
                 method="POST",
-                url_postfix=(
-                    f"{_helpers.get_resource_from_entity_type(entity_type)}/"
-                    f"{entity_id}/protected_branches"
-                ),
+                url_postfix=(f"{entity_type.value}/{entity_id}/protected_branches"),
                 data=branch_data,
             )
 
     def is_top_level_group(self, group_id: int) -> bool:
         response = self._send_gitlab_request(
             method="GET",
-            url_postfix=f"groups/{group_id}",
+            url_postfix=f"{Entity.GROUP.value}/{group_id}",
         )
         group_info = response.json()
 

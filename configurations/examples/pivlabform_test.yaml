@@ -38,8 +38,8 @@ project_config:
   variables:
     TEST:
       key: NEXUS_URL
-      value: "af.headoffice.pivlab"
-      description: nexus address
+      value:
+      description: nexus host
       environment_scope:
       filter:
       masked: false

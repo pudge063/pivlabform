@@ -2,10 +2,7 @@ import re
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from typing_extensions import Hashable, Optional
-
-from .protected_branches import ProtectedBranch
-from .variables import Variable
+from typing_extensions import Any, Hashable, Optional, Self
 
 
 class Visibility(str, Enum):
@@ -27,7 +24,7 @@ class EntitySettings(BaseModel):
     default_branch: Optional[str] = None
     "The default branch name. Requires initialize_with_readme to be true."
 
-    lfs_enabled: Optional[bool] = None
+    lfs_enabled: bool | None = None
     "Enable LFS."
 
     description: Optional[str] = None
@@ -39,7 +36,7 @@ class EntitySettings(BaseModel):
     auto_devops_enabled: Optional[bool] = None
     "Enable Auto DevOps for this project or group."
 
-    max_artifacts_size: Optional[int] = Field(None, ge=0)
+    max_artifacts_size: Optional[int] = Field(default=None, ge=0)
     "The maximum file size in megabytes for individual job artifacts."
 
     web_based_commit_signing_enabled: Optional[bool] = None
@@ -67,6 +64,10 @@ class EntitySettings(BaseModel):
         if v and not re.match(r"^[a-zA-Z0-9_\-./]+$", v):
             raise ValueError("Invalid branch name")
         return v
+
+    def to_api_json(self: Self) -> dict[str, Any]:
+        "Returns entity settings in json"
+        return self.model_dump(exclude_none=True, mode="json")
 
 
 class DuoAvailability(str, Enum):
@@ -99,7 +100,7 @@ class GroupSettings(EntitySettings):
     default_branch_protection_defaults: Optional[Hashable] = None
     "Introduced in GitLab 17.0. For available options, see Options for default_branch_protection_defaults."
 
-    two_factor_grace_period: Optional[int] = Field(None, ge=0)
+    two_factor_grace_period: Optional[int] = Field(default=None, ge=0)
     "Time before Two-factor authentication is enforced (in hours)."
 
     ip_restriction_ranges: Optional[str] = None
@@ -151,11 +152,11 @@ class GroupSettings(EntitySettings):
     shared_runners_setting: Optional[SharedRunnersSetting] = None
     "See Options for shared_runners_setting. Enable or disable instance runners for a group’s subgroups and projects."
 
-    extra_shared_runners_minutes_limit: Optional[int] = Field(None, ge=0)
+    extra_shared_runners_minutes_limit: Optional[int] = Field(default=None, ge=0)
     "Can be set by administrators only. Additional compute minutes for this group."
     "GitLab Self-Managed, Premium and Ultimate only."
 
-    shared_runners_minutes_limit: Optional[int] = Field(None, ge=0)
+    shared_runners_minutes_limit: Optional[int] = Field(default=None, ge=0)
     "Can be set by administrators only. Maximum number of monthly compute minutes for this group."
     "Can be nil (default; inherit system default), 0 (unlimited), or > 0."
     "GitLab Self-Managed, Premium and Ultimate only."
@@ -177,6 +178,7 @@ class GroupSettings(EntitySettings):
     "Available when omniauth_step_up_auth_for_namespace feature flag is enabled."
 
     # TOP-LEVEL GROUPS ONLY
+    # TODO: add check group for top-level group params
 
     file_template_project_id: Optional[int] = None
     "The ID of a project to load custom file templates from."
@@ -189,11 +191,13 @@ class GroupSettings(EntitySettings):
     "Comma-separated list of email address domains to allow group access."
     "Introduced in 17.4. GitLab Premium and Ultimate only."
 
-    unique_project_download_limit: Optional[int] = Field(None, ge=0)
+    unique_project_download_limit: Optional[int] = Field(default=None, ge=0)
     "Maximum number of unique projects a user can download in the specified time period before they are banned."
     "Available only on top-level groups. Default: 0, Maximum: 10,000. Ultimate only."
 
-    unique_project_download_limit_interval_in_seconds: Optional[int] = Field(None, ge=0)
+    unique_project_download_limit_interval_in_seconds: Optional[int] = Field(
+        default=None, ge=0
+    )
     "Time period during which a user can download a maximum amount of projects before they are banned."
     "Available only on top-level groups. Default: 0, Maximum: 864,000 seconds (10 days). Ultimate only."
 
@@ -219,14 +223,6 @@ class GroupSettings(EntitySettings):
 
     lock_math_rendering_limits_enabled: Optional[bool] = None
     "Indicates if math rendering limits are locked for all descendent groups."
-
-
-class GroupConfig(BaseModel):
-    settings: Optional[GroupSettings] = None
-    variables: Optional[dict[str, Variable]] = None
-    protected_branches: Optional[dict[str, Optional[ProtectedBranch]]] = Field(
-        default_factory=dict
-    )
 
 
 class MergeMethod(str, Enum):
@@ -283,7 +279,7 @@ class ProjectSettings(EntitySettings):
     "Introduced in GitLab 15.5 with feature flag only_allow_merge_if_all_status_checks_passed disabled by default."
     "Ultimate only."
 
-    approvals_before_merge: Optional[int] = Field(None, ge=0)
+    approvals_before_merge: Optional[int] = Field(default=None, ge=0)
     "How many approvers should approve merge requests by default."
     "To configure approval rules, see Merge request approvals API."
     "Deprecated in GitLab 16.0. Premium and Ultimate only."
@@ -307,11 +303,11 @@ class ProjectSettings(EntitySettings):
     ci_config_path: Optional[str] = None
     "The path to CI configuration file."
 
-    ci_default_git_depth: Optional[int] = Field(None, ge=0)
+    ci_default_git_depth: Optional[int] = Field(default=None, ge=0)
     "Default number of revisions for shallow cloning."
     "https://docs.gitlab.com/ci/pipelines/settings/#limit-the-number-of-changes-fetched-during-clone"
 
-    ci_delete_pipelines_in_seconds: Optional[int] = Field(None, ge=0)
+    ci_delete_pipelines_in_seconds: Optional[int] = Field(default=None, ge=0)
     "Pipelines older than the configured time are deleted."
 
     ci_forward_deployment_enabled: Optional[bool] = None
@@ -372,7 +368,7 @@ class ProjectSettings(EntitySettings):
     build_git_strategy: Optional[BuildGitStrategy] = None
     "The Git strategy. Defaults to fetch."
 
-    build_timeout: Optional[int] = Field(None, ge=0)
+    build_timeout: Optional[int] = Field(default=None, ge=0)
     "The maximum amount of time, in seconds, that a job can run."
 
     # jobs_enabled: Optional[bool] = None
@@ -567,11 +563,3 @@ class ProjectSettings(EntitySettings):
 
     package_registry_access_level: Optional[AccessLevel] = None
     "Enable or disable packages repository feature."
-
-
-class ProjectConfig(BaseModel):
-    settings: Optional[ProjectSettings] = None
-    variables: Optional[dict[str, Variable]] = None
-    protected_branches: Optional[dict[str, Optional[ProtectedBranch]]] = Field(
-        default_factory=dict
-    )

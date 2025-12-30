@@ -40,4 +40,4 @@ validate:
     DEBUG: true
   extends: [.base_job]
   script:
-    - pivlabform -c configurations/templates/global_template.yaml -v
+    - pivlabform --ci -c configurations/templates/global_template.yaml -v

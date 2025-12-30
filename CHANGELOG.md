@@ -1,5 +1,212 @@
 ## Changelog
 
+### [0.4.1] - [2025-12-30]
+
+#### Added
+- **Enhanced Entity Enum System**:
+  - Added `Entity.from_string()` method for flexible entity type parsing
+  - Added `Entity.lname` property for lowercase string representation
+  - Support for aliases (g/p/s) for entity type specification
+  - Automatic error handling for unknown entity types
+
+- **Enhanced Variable Validation**:
+  - Added comprehensive `Variable` model validation with regex patterns
+  - Implemented key format validation (A-Z, a-z, 0-9, _ only)
+  - Added reserved key detection (CI, GITLAB, KUBERNETES)
+  - Length validation for keys (max 255 characters)
+
+- **Public API Exports**:
+  - Exposed `LOGGER` in package's public interface for external use
+  - Made all core configuration models publicly accessible
+  - Enhanced library usability for programmatic integration
+
+- **Enhanced Protected Branch Documentation**:
+  - Added detailed docstrings to `ProtectedBranch` model fields
+  - Clarified access level defaults and behaviors
+  - Improved documentation for premium/ultimate features
+
+#### Changed
+- **BREAKING**: Renamed `entiry_settings.py` to `entity_settings.py` and `entity_config.py`
+- **BREAKING**: Split monolithic model file into logical modules:
+  - `entity_settings.py` → Entity settings models
+  - `entity_config.py` → Configuration container models
+- **Type System**:
+  - Replaced `typing_extensions.Self` with `Self` import
+  - Standardized imports from `typing_extensions`
+  - Improved type hints throughout the codebase
+- **CI/CD Integration**:
+  - Added `--ci` flag to GitLab CI validation job
+  - Ensured proper CI environment handling
+- **Model Organization**:
+  - Separated entity settings from configuration containers
+  - Improved import structure and module dependencies
+- **Logging Improvements**:
+  - Changed configuration success messages from `info` to `debug` level
+  - Enhanced entity processing logs with type information
+  - Added conditional logging for configuration sections
+
+#### Removed
+- **Deprecated Functions**:
+  - Removed `get_resource_from_entity_type()` helper function
+  - Eliminated dependency on legacy `_consts` module
+- **Legacy Code**:
+  - Deleted monolithic `entiry_settings.py` file
+  - Removed obsolete type hints and imports
+
+#### Fixed
+- **Configuration Processing**:
+  - Fixed entity type detection in manual configuration
+  - Added proper validation for recursive operations
+  - Fixed conditional configuration application logic
+- **Model Validation**:
+  - Added comprehensive validation for Variable keys
+  - Fixed field default specifications in Pydantic models
+- **API Endpoints**:
+  - Standardized endpoint construction using Entity enum
+  - Fixed URL encoding for entity paths
+
+#### Technical Improvements
+- **Code Quality**:
+  - Added `field_validator` decorators for robust input validation
+  - Implemented proper error messages for validation failures
+  - Enhanced model documentation with practical examples
+- **Error Handling**:
+  - Added graceful error handling for unknown entity types
+  - Improved user feedback for configuration errors
+- **Module Structure**:
+  ```python
+  # Before: from .entiry_settings import GroupConfig, ProjectConfig
+  # After: from .entity_config import GroupConfig, ProjectConfig
+  # After: from .entity_settings import GroupSettings, ProjectSettings
+  ```
+
+#### Example Configuration Update:
+```yaml
+# Configuration now properly organized
+group_config:
+  settings:  # GroupSettings model
+    default_branch: "main"
+
+  variables:  # List of Variable models
+    - key: "ENV_VAR"
+      value: "production"
+
+  protected_branches:  # ProtectedBranch models
+    main:
+      merge_access_level: 40
+```
+
+#### CLI Improvements:
+```bash
+# Enhanced entity type parsing
+pivlabform --group sandbox/my-group  # Full name
+pivlabform -g sandbox/my-group       # Alias support
+pivlabform --project 1234            # Project by ID
+```
+
+#### Notes
+- This release significantly improves the code organization and maintainability
+- The split model structure follows single responsibility principle
+- Enhanced validation prevents common configuration errors
+- Better public API enables advanced integration scenarios
+- Entity enum system provides type safety and developer experience improvements
+
+---
+
+### [0.4.0] - [2025-12-30]
+
+#### Added
+- **Enum-Based Entity Management**:
+  - Introduced `Entity` enum (`GROUP`, `PROJECT`, `SUBGROUP`) for type-safe entity handling
+  - Added enum-based API endpoints throughout the codebase
+  - Improved type safety in all entity-related operations
+
+- **Public API Exports**:
+  - Exposed `GitLab` class in package's public interface (`__init__.py`)
+  - Made core models (`ProjectConfig`, `ProjectSettings`, `GroupConfig`, `GroupSettings`) publicly accessible
+  - Enhanced library usability for external integration
+
+- **Enhanced Model Field Definitions**:
+  - Added `default=None` to Pydantic `Field` definitions for better serialization
+  - Updated type hints for boolean fields (`bool | None` syntax)
+  - Improved model consistency and validation
+
+#### Changed
+- **BREAKING**: All entity type parameters changed from `str` to `Entity` enum
+- **BREAKING**: Updated method signatures to use `Entity` enum instead of string literals
+- **API Endpoint Construction**:
+  - Replaced hardcoded endpoint strings with enum values (`Entity.GROUP.value`, `Entity.PROJECT.value`)
+  - Improved endpoint consistency across all GitLab API calls
+- **Conditional Configuration Application**:
+  - Added null checks before applying variables and protected branches configurations
+  - Prevented unnecessary API calls when configurations are empty
+- **Improved Logging**:
+  - Added entity type names in configuration success messages
+  - Enhanced debugging information
+
+#### Fixed
+- **Type Safety**: Eliminated string-based entity type comparisons in favor of enum
+- **Code Quality**: Removed deprecated `get_resource_from_entity_type()` helper function
+- **Configuration Processing**: Fixed conditional logic for empty configurations
+- **Recursive Validation**: Improved validation for recursive operations on projects
+
+#### Technical Improvements
+- **Endpoint Constants**:
+  ```python
+  # Before: "groups/{id}/projects"
+  # After: f"{Entity.GROUP.value}/{target_group}/{Entity.PROJECT.value}"
+  ```
+- **Entity Type Handling**:
+  ```python
+  # Before: entity_type == "group"
+  # After: entity_type == Entity.GROUP
+  ```
+- **Model Field Defaults**:
+  ```python
+  # Before: Optional[int] = Field(None, ge=0)
+  # After: Optional[int] = Field(default=None, ge=0)
+  ```
+
+#### Example Changes:
+```python
+# Before:
+self.gl.get_entity_id_from_url("sandbox/test", "group")
+
+# After:
+self.gl.get_entity_id_from_url("sandbox/test", Entity.GROUP)
+
+# Before:
+self._process_entity_configuration(groups, "group")
+
+# After:
+self._process_entity_configuration(groups, Entity.GROUP)
+```
+
+#### Benefits
+1. **Type Safety**: Compile-time checking of entity types
+2. **Code Completion**: IDE support for enum values
+3. **Reduced Errors**: Eliminated string typos in entity type handling
+4. **Better Documentation**: Clear entity type options
+5. **Consistency**: Uniform API endpoint construction
+
+#### Migration Notes
+- Update all calls to `GitLab` methods to use `Entity` enum instead of strings
+- Import `Entity` from `pivlabform.gitlab.gitlab` when needed
+- String comparisons for entity types need to be updated:
+  ```python
+  # Old: if entity_type == "group"
+  # New: if entity_type == Entity.GROUP
+  # Or for CLI string inputs: if entity_type == Entity.GROUP.name.lower()
+  ```
+
+#### Notes
+- This release significantly improves the type safety and maintainability of the codebase
+- The enum-based approach prevents common errors with string-based entity type handling
+- Public API exposure enables better integration with external tools and scripts
+- Conditional configuration application reduces unnecessary API calls and improves performance
+
+---
+
 ### [0.3.1] - [2025-12-29]
 
 #### Added

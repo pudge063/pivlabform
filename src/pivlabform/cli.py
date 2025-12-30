@@ -1,7 +1,7 @@
 import sys
 
 import click
-import typing_extensions
+from typing_extensions import Optional
 
 from .pivlabform import Pivlabform
 from .utils import _consts, _helpers
@@ -65,10 +65,10 @@ def cli():
         help="gitlab host url (example: `https://pivlab.space`)",
     )
     def process(
-        manual: typing_extensions.Optional[bool],
-        type: typing_extensions.Optional[str],
-        path: typing_extensions.Optional[str],
-        id: typing_extensions.Optional[int],
+        manual: Optional[bool],
+        type: Optional[str],
+        path: Optional[str],
+        id: Optional[int],
         config_file: str,
         recursive: bool,
         gitlab_host: str,
