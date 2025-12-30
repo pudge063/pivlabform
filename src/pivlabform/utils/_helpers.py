@@ -6,12 +6,7 @@ import typing_extensions
 import yaml
 
 from ..gitlab.models import Variable
-from . import _consts
 from ._logger import LOGGER
-
-
-def get_resource_from_entity_type(entity_type: str) -> str:
-    return _consts.APIResources.from_entity_type(entity_type).value
 
 
 def check_validate(validate: bool) -> None:

@@ -1,9 +1,9 @@
 import json
 import sys
 
-import typing_extensions
+from typing_extensions import Any, Optional, Self
 
-from .gitlab.gitlab import GitLab
+from .gitlab.gitlab import Entity, GitLab
 from .gitlab.models import ConfigModel, ProtectedBranch, Variable
 from .utils import _helpers
 from .utils._helpers import LOGGER
@@ -11,7 +11,7 @@ from .utils._helpers import LOGGER
 
 class Pivlabform:
     def __init__(
-        self: typing_extensions.Self,
+        self: Self,
         config_file: str,
         gitlab_host: str,
     ) -> None:
@@ -25,19 +25,17 @@ class Pivlabform:
         )
 
     def _process_entity_configuration(
-        self: typing_extensions.Self,
+        self: Self,
         entities: list[int | None],
-        entity_type: str,
+        entity_type: Entity,
     ) -> None:
         for entity in entities:
-            LOGGER.info(f"process_entity_configuration: {entity}")
-            entity_config: dict[str, typing_extensions.Any] = (
-                self.config_model_json.get(f"{entity_type}_config", {})
+            LOGGER.info(f"processing: {entity_type.lname} - {entity}")
+            entity_config: dict[str, Any] = self.config_model_json.get(
+                f"{entity_type.lname}_config", {}
             )
 
-            settings: dict[str, typing_extensions.Any] = entity_config.get(
-                "settings", {}
-            )
+            settings: dict[str, Any] = entity_config.get("settings", {})
 
             variables: list[dict[str, Variable]] = entity_config.get(
                 "variables",
@@ -50,60 +48,69 @@ class Pivlabform:
             )
 
             if settings:
+                LOGGER.info(f"configure settings in entity: {entity}")
                 self.gl.confugure_entity(
                     entity_id=entity,  # type: ignore
                     entity_type=entity_type,
                     config=settings,
                 )
 
-            self.gl.update_entity_variables(
-                entity_id=entity,  # type: ignore
-                entity_type=entity_type,
-                config_variables=variables,
-            )
+            if variables:
+                LOGGER.info(f"update variables in entity: {entity}")
+                self.gl.update_entity_variables(
+                    entity_id=entity,  # type: ignore
+                    entity_type=entity_type,
+                    config_variables=variables,
+                )
 
-            self.gl.update_entity_protected_branches(
-                entity_id=entity,  # type: ignore
-                entity_type=entity_type,
-                config_protected_branches=protected_branches,
-            )
+            if protected_branches:
+                LOGGER.info(f"update protected branches entity: {entity}")
+                self.gl.update_entity_protected_branches(
+                    entity_id=entity,  # type: ignore
+                    entity_type=entity_type,
+                    config_protected_branches=protected_branches,
+                )
 
     def process_manual_configuration(
-        self: typing_extensions.Self,
-        path_type: typing_extensions.Optional[str],
-        path: typing_extensions.Optional[str],
-        id: typing_extensions.Optional[int],
+        self: Self,
+        path_type: Optional[str],
+        path: Optional[str],
+        id: Optional[int],
         recursive: bool,
         validate: bool,
     ):
         if not path_type:
             LOGGER.error("ERROR: not provided type of path")
             sys.exit(1)
+
+        entity_type = Entity.from_string(path_type)
+
         if not path and not id or (id and path):
             LOGGER.error("ERROR: required only one argumend - `id` or `path`")
             sys.exit(1)
-        if recursive and path_type == "project":
-            LOGGER.error("ERROR: recursive only for groups")
+
+        if recursive and not entity_type == Entity.GROUP:
+            LOGGER.error("ERROR: recursive apply only for groups")
             sys.exit(1)
 
         if not id:
             id = self.gl.get_entity_id_from_url(
                 entity_path=path,  # type: ignore
-                entity_type=path_type,
+                entity_type=entity_type,
             )
 
-        groups: list[int | None]
-        projects: list[int | None]
+        groups: list[int]
+        projects: list[int]
         groups, projects = [], []
 
-        if path_type == "group":
+        if entity_type == Entity.GROUP.lname:
             groups = self.gl.get_all_groups_recursive(id) if recursive else [id]
             projects = (
                 self.gl.get_all_projects_recursive(id)
                 if recursive
                 else self.gl.get_all_projects_from_group(id)
             )
-        elif path_type == "project":
+        elif entity_type == Entity.PROJECT.lname:
             groups = []
             projects = [id]
 
@@ -114,16 +121,16 @@ class Pivlabform:
 
         self._process_entity_configuration(
             entities=groups,  # type: ignore
-            entity_type="group",
+            entity_type=Entity.GROUP,
         )
 
         self._process_entity_configuration(
             entities=projects,  # type: ignore
-            entity_type="project",
+            entity_type=Entity.PROJECT,
         )
 
     def get_entities_id_list(
-        self: typing_extensions.Self,
+        self: Self,
         recursive: bool,
     ) -> tuple[list[int], list[int]]:
 
@@ -137,7 +144,7 @@ class Pivlabform:
 
         for group in groups:
             if type(group) is str:
-                id = self.gl.get_entity_id_from_url(group, "group")
+                id = self.gl.get_entity_id_from_url(group, Entity.GROUP)
             elif type(group) is int:
                 id = group
             else:
@@ -167,7 +174,7 @@ class Pivlabform:
 
         for project in projects:
             if type(project) is str:
-                id = self.gl.get_entity_id_from_url(project, "project")
+                id = self.gl.get_entity_id_from_url(project, Entity.PROJECT)
             elif type(project) is int:
                 id = project
             else:
@@ -181,7 +188,7 @@ class Pivlabform:
         return (group_entities, project_entities)
 
     def process_auto_configuration(
-        self: typing_extensions.Self,
+        self: Self,
         recursive: bool,
         validate: bool,
     ):
@@ -203,11 +210,11 @@ class Pivlabform:
         if projects:
             self._process_entity_configuration(
                 entities=projects,  # type: ignore
-                entity_type="project",
+                entity_type=Entity.PROJECT,
             )
 
         if groups:
             self._process_entity_configuration(
                 entities=groups,  # type: ignore
-                entity_type="group",
+                entity_type=Entity.GROUP,
             )

@@ -29,7 +29,8 @@ repos:
         args:
           [
             "--max-line-length=120",
-            "--per-file-ignores=src/pivlabform/gitlab/models/entiry_settings.py:E501",
+            "--per-file-ignores=src/pivlabform/gitlab/models/entity_settings.py:E501",
+            "--exclude=examples/*",
           ]
 
   - repo: https://github.com/pre-commit/mirrors-mypy

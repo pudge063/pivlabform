@@ -1,8 +1,7 @@
-import typing_extensions
 from pydantic import BaseModel, ConfigDict
-from typing_extensions import Optional
+from typing_extensions import Any, Optional
 
-from .entiry_settings import GroupConfig, ProjectConfig
+from .entity_config import GroupConfig, ProjectConfig
 
 
 class ConfigModel(BaseModel):
@@ -14,5 +13,5 @@ class ConfigModel(BaseModel):
     groups: Optional[list[str | int]] = None
     projects: Optional[list[str | int]] = None
 
-    def dump_model_to_json(self) -> dict[str, typing_extensions.Any]:
+    def dump_model_to_json(self) -> dict[str, Any]:
         return self.model_dump(exclude_none=True, mode="json")
