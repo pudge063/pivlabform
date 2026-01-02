@@ -525,9 +525,10 @@ If the terms of the AGPL-3.0 are incompatible with your business model (for exam
 
 ---
 
-**To inquire about a commercial license:**
-📧 **Email:** studentq.work@yandex.ru
-💬 **Telegram:** @pudge_vibes
+**To inquire about a commercial license:** <br>
+📧 **Email:** studentq.work@yandex.ru<br>
+💬 **Telegram:** @pudge_vibes<br>
+
 *Please include in your email: company name, intended use case, and approximate number of developers.*
 
 ---

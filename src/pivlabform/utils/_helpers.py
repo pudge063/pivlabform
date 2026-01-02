@@ -15,6 +15,10 @@ def check_validate(validate: bool) -> None:
         sys.exit(0)
 
 
+def ignore_errors() -> bool:
+    return os.getenv("IGNORE_REQUESTS_ERRORS", "").lower() in ["true", "yes"]
+
+
 def load_data_from_yaml(
     yaml_path: str,
 ) -> dict[str, typing_extensions.Any]:
