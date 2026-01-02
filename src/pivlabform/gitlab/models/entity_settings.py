@@ -225,6 +225,17 @@ class GroupSettings(EntitySettings):
     "Indicates if math rendering limits are locked for all descendent groups."
 
 
+class CreateGroupSettings(EntitySettings):
+    name: str = Field(..., min_length=1, max_length=255)
+    "The name of the group."
+
+    path: str = Field(..., min_length=1, max_length=255)
+    "The path of the group."
+
+    parent_id: Optional[int] = None
+    "The parent group ID for creating nested group."
+
+
 class MergeMethod(str, Enum):
     MERGE = "merge"
     REBASE_MERGE = "rebase_merge"
@@ -563,3 +574,16 @@ class ProjectSettings(EntitySettings):
 
     package_registry_access_level: Optional[AccessLevel] = None
     "Enable or disable packages repository feature."
+
+
+class CreateProjectSettings(ProjectSettings):
+    name: Optional[str] = None
+    "The name of the new project. Equals path if not provided."
+
+    path: Optional[str] = None
+    "Repository name for new project. Generated based on name if not provided (generated as lowercase with dashes)."
+    "The path must not start or end with a special character and must not contain consecutive special characters."
+
+    namespace_id: Optional[int] = None
+    "Namespace for the new project. Specify a group ID or subgroup ID."
+    "If not provided, defaults to the current user’s personal namespace."

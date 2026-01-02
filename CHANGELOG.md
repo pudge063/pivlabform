@@ -1,5 +1,37 @@
 ## Changelog
 
+Based on the provided diff, the following changelog has been generated:
+
+### [0.5.1] - 2026-01-02
+
+#### Added
+- **New methods in the `GitLab` class:**
+  - `create_entity()`: A universal method for creating entities (groups/projects).
+  - `archive_entity()`: A universal method for archiving/unarchiving entities (projects). Group archiving is temporarily unavailable due to GitLab API limitations.
+  - `delete_entity()`: A universal method for deleting entities (groups/projects).
+- **New data models in `entity_settings.py`:**
+  - `CreateGroupSettings`: A settings model for group creation with required fields `name`, `path` and optional `parent_id`.
+  - `CreateProjectSettings`: A settings model for project creation, extending `ProjectSettings`, with fields `name`, `path`, `namespace_id`.
+- **New utility function:**
+  - `ignore_errors()`: Function that checks the `IGNORE_REQUESTS_ERRORS` environment variable. Allows continuation of execution on HTTP request errors instead of immediate program termination.
+
+#### Changed
+- **Method `_send_gitlab_request` in `gitlab.py`:**
+  - Now, on an HTTP request error, `sys.exit(1)` is only called if `_helpers.ignore_errors()` returns `False`. This makes error handling more flexible.
+- **Method `is_top_level_group` in `gitlab.py`:**
+  - Added `self: Self` type annotation for better static analysis support.
+- **Methods `create_entity`, `archive_entity`, `delete_entity` in `gitlab.py`:**
+  - Use `self: Self` annotation.
+- **File `src/pivlabform/gitlab/models/__init__.py`:**
+  - Updated `__all__` list to export new models `CreateGroupSettings` and `CreateProjectSettings`.
+
+#### Notes
+- **Group Archiving:** Archiving groups is not available in the current GitLab API version. The `archive_entity` method for `Entity.GROUP` type logs a warning and does nothing. Links to relevant GitLab issues are added to the code.
+- **Error Handling:** The new `IGNORE_REQUESTS_ERRORS` environment variable functionality allows script execution to continue on network request failures, which can be useful in unstable environments or for debugging.
+- **Extensibility:** The new universal methods `create_entity`, `archive_entity`, `delete_entity` abstract work with different GitLab entity types (projects, groups), simplifying the code and making it more consistent.
+
+---
+
 ### [0.5.0] - 2025-12-31
 
 #### Breaking Changes

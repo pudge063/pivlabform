@@ -66,7 +66,8 @@ class GitLab:
             LOGGER.error(f"ERROR: {r.status_code}:{r.text}")
             LOGGER.error(f"URL: {self.gitlab_api_url}/{url_postfix}")
             LOGGER.error(f"DATA:\n{json.dumps(data, indent=4)}")
-            sys.exit(1)
+            if not _helpers.ignore_errors():
+                sys.exit(1)
 
         return r
 
@@ -299,7 +300,7 @@ class GitLab:
                 data=branch_data,
             )
 
-    def is_top_level_group(self, group_id: int) -> bool:
+    def is_top_level_group(self: Self, group_id: int) -> bool:
         response = self._send_gitlab_request(
             method="GET",
             url_postfix=f"{Entity.GROUP.value}/{group_id}",
@@ -307,3 +308,51 @@ class GitLab:
         group_info = response.json()
 
         return group_info.get("parent_id") is None
+
+    def create_entity(
+        self: Self,
+        entity_type: Entity,
+        entity_settings: dict[str, Any],
+    ) -> int:
+        r = self._send_gitlab_request(
+            method="POST",
+            url_postfix=f"{entity_type.value}",
+            data=entity_settings,
+        )
+
+        return r.json()["id"]
+
+    def archive_entity(
+        self: Self,
+        entity_id: int,
+        entity_type: Entity,
+        archive: bool,
+    ) -> None:
+        if entity_type == Entity.GROUP:
+            """
+            Archive GitLab group currently unavailable
+            https://gitlab.com/gitlab-org/gitlab/-/issues/15967
+            https://gitlab.com/groups/gitlab-org/-/epics/15019
+            """
+            LOGGER.warning(
+                "archive group disabled in GitLab, see issue:"
+                "https://gitlab.com/groups/gitlab-org/-/epics/15019"
+            )
+            return None
+
+        status = "archive" if archive else "unarchive"
+
+        self._send_gitlab_request(
+            method="POST",
+            url_postfix=f"{entity_type.value}/{entity_id}/{status}",
+        )
+
+    def delete_entity(
+        self: Self,
+        entity_id: int,
+        entity_type: Entity,
+    ):
+        self._send_gitlab_request(
+            method="DELETE",
+            url_postfix=f"{entity_type.value}/{entity_id}",
+        )
